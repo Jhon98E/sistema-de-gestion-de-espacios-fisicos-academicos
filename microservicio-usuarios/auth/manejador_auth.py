@@ -3,9 +3,9 @@ import jwt
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
-from db.database import get_db
+from database import get_db
 from sqlalchemy.orm import Session
-from db.models.usuario_model import UsuarioDB
+from models.usuario_model import UsuarioDB
 
 
 SECRET_KEY = "TU_SECRETO_SUPER_SEGURO"
@@ -37,7 +37,7 @@ def decodificar_token_acceso(token: str):
     except (jwt.ExpiredSignatureError, jwt.PyJWKError):
         return HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, 
-                detail="Credenciales de autenticación Invalidas", 
+                detail="Credenciales de autenticación Invalidas",
                 headers={"WWW-Authenticate": "Bearer"}
             )
     

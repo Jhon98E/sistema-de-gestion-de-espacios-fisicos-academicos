@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from db.database import Base, engine
-from routes import usuarios_routes
-from routes import auth_routes
+from database import Base, engine
+from routes import usuario_routes, auth_routes
 
 
 @asynccontextmanager
@@ -13,9 +12,8 @@ async def lifespan(app: FastAPI):
     # Código de apagado: aquí eliminamos las tablas
 
 
-app = FastAPI(lifespan=lifespan)
-app.title = "Microservicio de Gestion de Usuarios y Autenticación"
+app = FastAPI(lifespan=lifespan, title="Microservicio de Gestion de Usuarios y Autenticación")
 
 # Inicializar Rutas
-app.include_router(router=usuarios_routes.usuario)
-app.include_router(router=auth_routes.auth_router)
+app.include_router(usuario_routes.usuario_router)
+app.include_router(auth_routes.auth_router)

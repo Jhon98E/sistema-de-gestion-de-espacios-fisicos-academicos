@@ -1,9 +1,9 @@
 from typing import Optional
 from pydantic import BaseModel
 from sqlalchemy import Column, String, Integer
-from db.database import Base
+from database import Base
 
-
+# Esquema para validación (Pydantic)
 class Usuario(BaseModel):
     id: Optional[int] = None
     nombre: str
@@ -13,6 +13,7 @@ class Usuario(BaseModel):
     email: str
     password: str
 
+# Modelo para la base de datos (SQLAlchemy)
 class UsuarioDB(Base):
     __tablename__ = "usuarios"
 
