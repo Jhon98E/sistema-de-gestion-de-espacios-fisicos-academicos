@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db_programas
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=programas
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  microservicio_programas:
+    build: .
+    container_name: ms-programas
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://postgres:root@db:5432/programas
+    ports:
+      - "8001:8001"
+
+volumes:
+  db_data:
