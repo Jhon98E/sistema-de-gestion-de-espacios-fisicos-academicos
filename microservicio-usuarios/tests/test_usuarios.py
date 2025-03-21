@@ -11,6 +11,7 @@ usuario_test = {
     "password": "password123"
 }
 
+
 @pytest.fixture
 def auth_token(client: TestClient):
     
@@ -21,6 +22,7 @@ def auth_token(client: TestClient):
     assert response.status_code == 200, f"Error en login: {response.json()}"
     return response.json()["access_token"]
 
+
 def test_crear_usuario(client: TestClient):
     
     response = client.post("/usuarios/crear-usuario", json=usuario_test)
@@ -28,12 +30,14 @@ def test_crear_usuario(client: TestClient):
     if response.status_code == 201:
         assert response.json()["nombre"] == "Juan"
 
+
 def test_consultar_usuarios(client: TestClient, auth_token):
     
     headers = {"Authorization": f"Bearer {auth_token}"}
     response = client.get("/usuarios/", headers=headers)
     assert response.status_code == 200
     assert isinstance(response.json(), list)
+
 
 def test_consultar_usuario_por_id(client: TestClient, auth_token):
     
@@ -48,12 +52,14 @@ def test_consultar_usuario_por_id(client: TestClient, auth_token):
     assert response.status_code == 200
     assert response.json()["codigo_usuario"] == "JP123"
 
+
 def test_consultar_usuario_por_rol(client: TestClient, auth_token):
     
     headers = {"Authorization": f"Bearer {auth_token}"}
     response = client.get("/usuarios/rol/admin", headers=headers)
     assert response.status_code == 200
     assert isinstance(response.json(), list)
+
 
 def test_actualizar_usuario(client: TestClient, auth_token):
     
@@ -68,6 +74,7 @@ def test_actualizar_usuario(client: TestClient, auth_token):
     response = client.put(f"/usuarios/actualizar-usuario/{usuario_id}", json=nuevo_dato, headers=headers)
     assert response.status_code == 200
     assert response.json()["nombre"] == "Juan Modificado"
+
 
 def test_eliminar_usuario(client: TestClient, auth_token):
     
