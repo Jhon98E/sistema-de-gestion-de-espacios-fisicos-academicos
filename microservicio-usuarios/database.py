@@ -1,20 +1,20 @@
-import os
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from fastapi import FastAPI
+from contextlib import asynccontextmanager
+from database import Base, engine
+from routes import usuario_routes, auth_routes
 
 
-# Asegúrate de configurar la URL de tu BD PostgreSQL
-# Formato: postgresql://usuario:password@host:puerto/nombre_bd
-BASE_DE_DATOS_URL = os.getenv("DATABASE_URL", "postgresql://postgres:root@localhost:5432/usuarios")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Código de startup: aquí creamos las tablas
+    Base.metadata.create_all(bind=engine)
+    yield
+    # Código de apagado: aquí eliminamos las tablas
 
-engine = create_engine(url=BASE_DE_DATOS_URL, echo=True)  # echo=True para ver las queries en consola (opcional)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-Base = declarative_base()
+app = FastAPI(lifespan=lifespan,
+              title="Microservicio de Gestion de Usuarios y Autenticación")
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# Inicializar Rutas
+app.include_router(usuario_routes.usuario_router)
+app.include_router(auth_routes.auth_router)
