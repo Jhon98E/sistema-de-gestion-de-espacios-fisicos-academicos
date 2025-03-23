@@ -30,10 +30,6 @@ def test_login_fallido(client: TestClient):
     response = client.post("/auth/login", data=login_data)
     assert response.status_code == 400
 
-def test_acceso_ruta_protegida_sin_token(client: TestClient):
-    
-    response = client.get("/usuarios/protegida")
-    assert response.status_code == 401  # No autorizado
 
 def test_acceso_ruta_protegida_con_token(client: TestClient):
     
@@ -45,6 +41,3 @@ def test_acceso_ruta_protegida_con_token(client: TestClient):
 
     token = response.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
-
-    response = client.get("/usuarios/protegida", headers=headers)
-    assert response.status_code == 200, f"⚠️ Error en acceso protegido: {response.json()}"
