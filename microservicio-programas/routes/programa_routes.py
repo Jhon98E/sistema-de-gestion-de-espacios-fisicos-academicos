@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.database import get_db
-from app.controllers import programa_controller
-from app.schemas.programa_schemas import Programa as ProgramaSchema
+from database import get_db
+from controllers import programa_controller
+from schemas.programa_schemas import Programa as ProgramaSchema
 
 router = APIRouter(prefix="/programas", tags=["Programas"])
 

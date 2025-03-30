@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from app.routes import programa_routes  # Importa las rutas de programas
-from app.database import Base, engine
+from routes import programa_routes  
+from database import Base, engine
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
