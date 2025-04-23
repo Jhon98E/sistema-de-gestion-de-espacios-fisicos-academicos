@@ -1,4 +1,7 @@
 from pydantic import BaseModel
+from sqlalchemy import Column, Integer, String
+from database import Base
+
 
 class Cohorte(BaseModel):
     id: int
@@ -7,7 +10,13 @@ class Cohorte(BaseModel):
     fecha_inicio: str
     estado: str
 
-cohortes = [
-    Cohorte(id=1, nombre="Cohorte1", programa_academico="Ingeniería de Sistemas", fecha_inicio="2021-01-01", estado="Activa"),
-    Cohorte(id=2, nombre="Cohorte2", programa_academico="Ingeniería de Sistemas", fecha_inicio="2021-01-01", estado="Activa"),
-    ]
+
+
+class CohorteDB(Base):
+    __tablename__ = "cohortes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String, index=True, nullable=False)
+    programa_academico = Column(String, index=True, nullable=False)
+    fecha_inicio = Column(String, index=True, nullable=False)
+    estado = Column(String, index=True, nullable=False)
