@@ -1,56 +1,33 @@
-from fastapi import APIRouter, HTTPException
-from models.salones_model import salones, Salon
+from fastapi import APIRouter, Depends
+from models.salones_model import Salon
+from sqlalchemy.orm import Session
+from database import get_db
+from controllers.salones_controller import (
+    consultar_salones,
+    obtener_salon,
+    crear_salon,
+    actualizar_salon,
+    eliminar_salon,
+)
 
 salon_router = APIRouter()
 
-# Obtener todos los salones
 @salon_router.get("/")
-async def consultar_salones():
-    return salones
+async def route_consultar_salones(db:Session = Depends(get_db)):
+    return consultar_salones()
 
-# Obtener un salón por ID
 @salon_router.get("/{salon_id}")
-async def obtener_salon(salon_id: int):
-    for salon in salones:
-        if salon.id == salon_id:
-            return salon
-    raise HTTPException(status_code=404, detail="Salón no encontrado")
+async def route_obtener_salon(salon_id: int, db:Session = Depends(get_db)):
+    return obtener_salon(salon_id)
 
-# Crear un nuevo salón con ID único
 @salon_router.post("/")
-async def crear_salon(salon: Salon):
-    nuevo_id = max([s.id for s in salones], default=0) + 1  # Asignar ID automáticamente
-    nuevo_salon = Salon(id=nuevo_id, name=salon.name)
-    salones.append(nuevo_salon)
-    return nuevo_salon
+async def route_crear_salon(salon: Salon, db:Session = Depends(get_db)):
+    return crear_salon(salon)
 
-# Actualizar un salón existente
 @salon_router.put("/{salon_id}")
-async def actualizar_salon(salon_id: int, salon_actualizado: Salon):
-    for i, salon in enumerate(salones):
-        if salon.id == salon_id:
-            salones[i] = Salon(id=salon_id, name=salon_actualizado.name)  # Asegurar instancia válida
-            return salones[i]
-    raise HTTPException(status_code=404, detail="Salón no encontrado")
+async def route_actualizar_salon(salon_id: int, salon_actualizado: Salon, db:Session = Depends(get_db)):
+    return actualizar_salon(salon_id, salon_actualizado)
 
-# Eliminar un salón
 @salon_router.delete("/{salon_id}")
-async def eliminar_salon(salon_id: int):
-    for i, salon in enumerate(salones):
-        if salon.id == salon_id:
-            salones.pop(i)  # pop() en lugar de del para evitar errores de índice
-            return {"message": f"Salón {salon_id} eliminado"}
-    raise HTTPException(status_code=404, detail="Salón no encontrado")
-
-
-
-
-"""from fastapi import APIRouter
-from models.salones_model import salones
-
-salon_router=APIRouter()
-
-@salon_router.get("/")
-async def consultar_salones():
-    return salones"""
-
+async def route_eliminar_salon(salon_id: int, db:Session = Depends(get_db)):
+    return eliminar_salon(salon_id)

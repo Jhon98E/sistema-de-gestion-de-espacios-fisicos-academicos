@@ -1,9 +1,13 @@
 from pydantic import BaseModel
 from typing import Optional
-
+from database import Base
+from sqlalchemy import Column, String, Integer, Boolean
 class Salon(BaseModel):
     id: Optional[int] = None
-    name: str
+    nombre: str
+    capacidad: int
+    disponibilidad: bool
+    tipo: str
 
     class Config:
         schema_extra = {
@@ -12,21 +16,13 @@ class Salon(BaseModel):
             }
         }
 
-salones = [
-    Salon(id=1, name="salon 1"),
-    Salon(id=2, name="salon 2"),
-    Salon(id=3, name="salon 3"),
-]
 
+class SalonDB(Base):
+    __tablename__ = "salones"
 
-"""from pydantic import BaseModel
+    id= Column(Integer, primary_key= True, index=True)
+    nombre = Column(String, nullable=False)
+    capacidad = Column(Integer, nullable=False)
+    disponibilidad = Column(Boolean, nullable=False)
+    tipo = Column(String, nullable=True)
 
-class Salon(BaseModel):
-    id: int
-    name: str
-
-salones = [
-    Salon(id=1,name="salon 1"),
-    Salon(id=2,name="salon 2"),
-    Salon(id=3,name="salon 3"),
-]"""
