@@ -2,13 +2,13 @@ name: CI - Microservicio Programas
 on:
   push:
     paths:
-      - 'microservicio-programas/**'
+      - 'backend/microservicio-programas/**'   # Ajusta la ruta a la ubicación del microservicio
       - '.github/workflows/ms-programas.yml'
     branches:
       - main
   pull_request:
     paths:
-      - 'microservicio-programas/**'
+      - 'backend/microservicio-programas/**'   # Ajusta la ruta a la ubicación del microservicio
       - '.github/workflows/ms-programas.yml'
     branches:
       - main
@@ -19,7 +19,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: microservicio-programas
+        working-directory: backend/microservicio-programas   # Ajusta la ruta al microservicio
 
     steps:
       - name: Checkout del repositorio
