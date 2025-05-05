@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from database import Base, engine
-from routes import usuario_routes, auth_routes
+from controllers.repositories.database import Base, engine
+from views.routes import usuario_routes, auth_routes
 
 
 @asynccontextmanager

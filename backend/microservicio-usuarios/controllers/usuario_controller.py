@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from models.usuario_model import Usuario, UsuarioDB
 from fastapi import HTTPException, status
-from auth.manejador_auth import hash_password
+from controllers.services.auth.manejador_auth import hash_password
 
 def obtener_usuarios(db: Session):
     return db.query(UsuarioDB).all()
