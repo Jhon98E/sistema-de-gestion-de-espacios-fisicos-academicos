@@ -1,39 +1,54 @@
-name: CI - Microservicio Programas
+name: CI/CD Microservicio Programas
+
 on:
   push:
-    paths:
-      - 'backend/microservicio-programas/**'   # Ajusta la ruta a la ubicación del microservicio
-      - '.github/workflows/ms-programas.yml'
-    branches:
-      - main
+    branches: [ "main" ]
   pull_request:
-    paths:
-      - 'backend/microservicio-programas/**'   # Ajusta la ruta a la ubicación del microservicio
-      - '.github/workflows/ms-programas.yml'
-    branches:
-      - main
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
-  test:
-    runs-on: ubuntu-22.04 
+  ms-programas_test_and_build:
 
-    defaults:
-      run:
-        working-directory: backend/microservicio-programas   # Ajusta la ruta al microservicio
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout del repositorio
-        uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-      - name: Configurar Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.11
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
 
-      - name: Instalar dependencias
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+    - name: Install dependencies
+      working-directory: backend/microservicio-programas
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Ejecutar tests
-        run: pytest --maxfail=1 --disable-warnings -v
+    - name: linting with ruff
+      working-directory: backend/microservicio-programas
+      run: |
+        ruff check . --exit-zero --fix
+
+    - name: Test with pytest
+      working-directory: backend/microservicio-programas
+      run: |
+        pytest --maxfail=1 --disable-warnings -v
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+  
+    - name: Build and push to DockerHub
+      uses: docker/build-push-action@v6
+      with:
+        context: backend/microservicio-programas
+        file: backend/microservicio-programas/Dockerfile
+        push: true
+        tags: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/ms-programas:latest
