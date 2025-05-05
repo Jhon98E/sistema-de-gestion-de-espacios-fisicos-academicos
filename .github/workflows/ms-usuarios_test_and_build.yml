@@ -3,8 +3,12 @@ name: CI/CD Microservicio Usuarios
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'backend/microservicio-usuarios/**'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'backend/microservicio-usuarios/**'
 
 permissions:
   contents: read
