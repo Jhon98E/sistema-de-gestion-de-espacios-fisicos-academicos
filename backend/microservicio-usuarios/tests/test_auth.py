@@ -1,4 +1,3 @@
-import pytest
 from fastapi.testclient import TestClient
 
 usuario_test = {
@@ -38,6 +37,3 @@ def test_acceso_ruta_protegida_con_token(client: TestClient):
     login_data = {"username": "CL456", "password": "password456"}
     response = client.post("/auth/login", data=login_data)
     assert response.status_code == 200, f"⚠️ Error en login: {response.json()}"
-
-    token = response.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}

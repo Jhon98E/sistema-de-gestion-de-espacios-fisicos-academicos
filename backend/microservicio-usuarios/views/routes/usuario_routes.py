@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from database import get_db
+from controllers.repositories.database import get_db
 from models.usuario_model import Usuario
 from controllers import usuario_controller
-from auth.manejador_auth import consultar_usuario_actual
+from controllers.services.auth.manejador_auth import consultar_usuario_actual
 
 usuario_router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
 

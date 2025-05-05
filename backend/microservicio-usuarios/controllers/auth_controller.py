@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from models.usuario_model import UsuarioDB
-from auth.manejador_auth import verificar_password, crear_token_acceso
+from controllers.services.auth.manejador_auth import verificar_password, crear_token_acceso
 
 def login_usuario(codigo_usuario: str, password: str, db: Session):
     usuario_db = db.query(UsuarioDB).filter(UsuarioDB.codigo_usuario == codigo_usuario).first()
