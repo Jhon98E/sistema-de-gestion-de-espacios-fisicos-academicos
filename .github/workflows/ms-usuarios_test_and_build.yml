@@ -5,10 +5,12 @@ on:
     branches: [ "main" ]
     paths:
       - 'backend/microservicio-usuarios/**'
+      - 'backend/.github/workflows/ms-usuarios_test_and_build.yml'
   pull_request:
     branches: [ "main" ]
     paths:
       - 'backend/microservicio-usuarios/**'
+      - 'backend/.github/workflows/ms-usuarios_test_and_build.yml'
 
 permissions:
   contents: read
