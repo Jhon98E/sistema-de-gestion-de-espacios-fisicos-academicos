@@ -3,7 +3,7 @@ import jwt
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
-from database import get_db
+from controllers.repositories.database import get_db
 from sqlalchemy.orm import Session
 from models.usuario_model import UsuarioDB
 

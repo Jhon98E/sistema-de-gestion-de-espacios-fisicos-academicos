@@ -1,7 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel
 from sqlalchemy import Column, String, Integer
-from database import Base
+from controllers.repositories.database import Base
 
 # Esquema para validación (Pydantic)
 class Usuario(BaseModel):
