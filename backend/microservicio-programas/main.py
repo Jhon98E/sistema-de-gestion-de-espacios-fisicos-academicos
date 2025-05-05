@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from routes import programa_routes  
+from views.routes import programa_routes  
 from contextlib import asynccontextmanager
-from database import Base, engine
+from controllers.repositories.database import Base, engine
 
 
 @asynccontextmanager
