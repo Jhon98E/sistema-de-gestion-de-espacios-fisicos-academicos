@@ -32,7 +32,7 @@ jobs:
     - name: linting with ruff
       working-directory: backend/microservicio-programas
       run: |
-        ruff check . --exit-zero
+        ruff check . --exit-zero --fix
 
     - name: Test with pytest
       working-directory: backend/microservicio-programas
