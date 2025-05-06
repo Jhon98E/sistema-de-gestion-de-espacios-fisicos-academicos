@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
-from database import Base
+from controllers.repositories.database import Base
 from sqlalchemy import Column, String, Integer, Boolean
 class Salon(BaseModel):
     id: Optional[int] = None
@@ -8,14 +8,6 @@ class Salon(BaseModel):
     capacidad: int
     disponibilidad: bool
     tipo: str
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "name": "Salón nuevo"
-            }
-        }
-
 
 class SalonDB(Base):
     __tablename__ = "salones"

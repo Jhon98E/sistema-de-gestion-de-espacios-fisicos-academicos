@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from routes import salones_routes
-from database import Base, engine
+from views.routes import salones_routes
+from controllers.repositories.database import Base, engine
 from contextlib import asynccontextmanager
 
 @asynccontextmanager
