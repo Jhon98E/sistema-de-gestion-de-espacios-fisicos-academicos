@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from sqlalchemy import Column, Integer, String
-from database import Base
+from controllers.repositories.database import Base
 
 
 class Cohorte(BaseModel):
