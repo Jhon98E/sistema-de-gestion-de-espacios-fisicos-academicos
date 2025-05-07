@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from models.cohortes_model import Cohorte
 from controllers.cohortes_controller import *
 from sqlalchemy.orm import Session
-from database import get_db 
+from controllers.repositories.database import get_db 
 
 
 cohortes_route = APIRouter(prefix="/cohortes")
