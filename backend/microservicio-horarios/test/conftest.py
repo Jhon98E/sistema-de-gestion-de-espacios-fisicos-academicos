@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from main import app
-from database import Base, get_db
+from controllers.repositories.database import Base, get_db
 from models.horario_model import HorarioDB
 
 # 🔧 Crear base de datos en memoria

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from database import Base, engine
-from routes import horario_routes
+from controllers.repositories.database import Base, engine
+from views.routes import horario_routes
 
 
 @asynccontextmanager

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from database import get_db
+from controllers.repositories.database import get_db
 from models.horario_model import Horario
 from controllers import horario_controller
 
