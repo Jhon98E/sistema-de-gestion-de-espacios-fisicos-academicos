@@ -32,7 +32,7 @@ def crearCohorte(cohorte: Cohorte, db: Session):
     db.refresh(nueva_cohorte)
     return nueva_cohorte
 
-def actualizarCohorte(id: int, cohorte_actualizada, db: Session):
+def actualizarCohorte(id: int, cohorte_actualizada:Cohorte, db: Session):
     cohorte_db = db.query(CohorteDB).filter(CohorteDB.id == id).first()
     if not cohorte_db:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"La cohorte con ID {id} no fue encontrada.")
@@ -50,4 +50,4 @@ def eliminarCohorte(id: int, db: Session):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"La cohorte con ID {id} no fue encontrada.")
     db.delete(cohorte_db)
     db.commit()
-    return {"mensaje": f"La cohorte con ID {id} ha sido eliminada."}
+    return {"mensaje": "Cohorte eliminada correctamente"}

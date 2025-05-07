@@ -12,4 +12,3 @@ app = FastAPI(lifespan=lifespan)
 app.title = "Microservicio Gestion de Cohortes"
 
 app.include_router(cohortes_route)
-
