@@ -3,7 +3,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 
-# Asegúrate de configurar la URL de tu BD PostgreSQL
 # Formato: postgresql://usuario:password@host:puerto/nombre_bd
 BASE_DE_DATOS_URL = os.getenv("DATABASE_URL", "postgresql://postgres:root@localhost:5432/gestion_cohortes")
 

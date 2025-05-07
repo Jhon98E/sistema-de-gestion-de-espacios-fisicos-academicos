@@ -11,7 +11,6 @@ class Cohorte(BaseModel):
     estado: str
 
 
-
 class CohorteDB(Base):
     __tablename__ = "cohortes"
 
