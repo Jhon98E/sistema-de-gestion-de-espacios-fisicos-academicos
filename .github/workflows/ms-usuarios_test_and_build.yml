@@ -1,0 +1,60 @@
+name: CI Microservicio Usuarios
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'backend/microservicio-usuarios/**'
+      - 'backend/.github/workflows/ms-usuarios_test_and_build.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'backend/microservicio-usuarios/**'
+      - 'backend/.github/workflows/ms-usuarios_test_and_build.yml'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  ms-usuarios_test_and_build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.13
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.13"
+
+    - name: Instalando dependencias
+      working-directory: backend/microservicio-usuarios
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Linting con ruff
+      working-directory: backend/microservicio-usuarios
+      run: |
+        ruff check .
+
+    - name: Testing con pytest
+      working-directory: backend/microservicio-usuarios
+      run: |
+        pytest -v
+
+    - name: Accediendo a DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+  
+    - name: Construir y Enviar a DockerHub
+      uses: docker/build-push-action@v6
+      with:
+        context: backend/microservicio-usuarios
+        file: backend/microservicio-usuarios/Dockerfile
+        push: true
+        tags: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/ms-usuarios:latest
