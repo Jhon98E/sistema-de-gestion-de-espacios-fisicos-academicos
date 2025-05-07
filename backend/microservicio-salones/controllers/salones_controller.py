@@ -1,4 +1,3 @@
-# controllers/salones_controller.py
 from fastapi import HTTPException
 from models.salones_model import Salon, SalonDB
 from sqlalchemy.orm import Session
@@ -13,14 +12,13 @@ def obtener_salon(db: Session, salon_id: int):
     return salon
 
 def crear_salon(salon: Salon, db:Session):
-    if db.query(SalonDB).filter(SalonDB.nombre == Salon.nombre).first() or \
-        db.query(SalonDB).filter(SalonDB.nombre == Salon.nombre).first():
+    if db.query(SalonDB).filter(SalonDB.nombre == salon.nombre).first():
         raise HTTPException(status_code=400, detail="Salón ya existe")
     
     nuevo_salon = SalonDB(
-        nombre=salon.nombre,
-        descripcion=salon.descripcion,
+        nombre=salon.nombre,        
         capacidad=salon.capacidad,
+        disponibilidad=salon.disponibilidad,
         tipo=salon.tipo,
     )
     
@@ -35,8 +33,8 @@ def actualizar_salon(db:Session, salon_id: int, salon:Salon):
         raise HTTPException(status_code=404, detail="Salón no encontrado")
     
     salon_db.nombre=salon.nombre
-    salon_db.descripcion=salon.descripcion
     salon_db.capacidad=salon.capacidad
+    salon_db.disponibilidad=salon.disponibilidad
     salon_db.tipo=salon.tipo
 
     db.commit()
