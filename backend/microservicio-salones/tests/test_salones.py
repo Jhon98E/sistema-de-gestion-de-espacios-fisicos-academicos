@@ -1,5 +1,3 @@
-from models.salones_model import SalonDB
-
 def test_crear_salon(client):
     nuevo_salon = {
         "nombre": "Salón A",
@@ -53,7 +51,7 @@ def test_actualizar_salon(client):
     data = response.json()
     assert data["nombre"] == "Salón C Actualizado"
     assert data["capacidad"] == 35
-    assert data["disponibilidad"] == False
+    assert not data["disponibilidad"]
     assert data["tipo"] == "Auditorio"
 
 def test_eliminar_salon(client):
