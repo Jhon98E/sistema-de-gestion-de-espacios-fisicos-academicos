@@ -10,7 +10,7 @@ from controllers.salones_controller import (
     eliminar_salon,
 )
 
-salon_router = APIRouter()
+salon_router = APIRouter(prefix="/salones", tags=["Salones"])
 
 @salon_router.get("/")
 async def route_consultar_salones(db: Session = Depends(get_db)):
