@@ -14,7 +14,7 @@ async def consultar_asignaturas(db: Session = Depends(get_db)):
 
 
 @asignatura_router.get('/{id}')
-async def consultar_asignaturas(id: int, db: Session = Depends(get_db)):
+async def consultar_asignaturas_por_id(id: int, db: Session = Depends(get_db)):
     return asignatura_controller.obtener_asignatura_por_id(id, db)
 
 

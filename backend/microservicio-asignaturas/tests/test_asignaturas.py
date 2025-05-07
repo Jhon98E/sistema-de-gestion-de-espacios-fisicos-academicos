@@ -1,6 +1,3 @@
-import pytest
-from fastapi.testclient import TestClient
-
 def test_crear_asignatura(client):
     nueva = {"id": 1, "nombre": "Matemáticas", "programa": "Ingeniería"}
     response = client.post("/asignatura/crear-asignatura", json=nueva)
