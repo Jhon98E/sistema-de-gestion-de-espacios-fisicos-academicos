@@ -1,11 +1,11 @@
 from pydantic import BaseModel
 from sqlalchemy import Column, Integer, String
-from database import Base
+from controllers.repositories.database import Base
 
 class Asignatura(BaseModel):
     id: int
     nombre: str
-    programa: str 
+    programa: str
 
 class AsignaturaDB(Base):
     __tablename__ = "asignaturas"
