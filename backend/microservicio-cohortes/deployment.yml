@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: cohortes-deployment
+spec:
+  replicas: 2 
+  selector:
+    matchLabels:
+      app: cohortes
+  template:
+    metadata:
+      labels:
+        app: cohortes
+    spec:
+      containers:
+      - name: ms-cohortes
+        image: jhonenriquez98/ms-cohortes:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://postgres:root@postgres-service:5432/asignacion_espacios"
