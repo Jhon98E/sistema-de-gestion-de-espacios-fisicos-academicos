@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: programas-deployment
+spec:
+  replicas: 2 
+  selector:
+    matchLabels:
+      app: programas
+  template:
+    metadata:
+      labels:
+        app: programas
+    spec:
+      containers:
+      - name: ms-programas
+        image: jhonenriquez98/ms-programas:latest
+        ports:
+        - containerPort: 8001
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://postgres:root@postgres-service:5432/asignacion_espacios"
