@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, status, Depends
 from models.cohortes_model import Cohorte
-from controllers.cohortes_controller import *
+from controllers.cohortes_controller import obtenerCohortes, obtenerCohortePorId, obtenerCohortePorNombre, crearCohorte, actualizarCohorte, eliminarCohorte
 from sqlalchemy.orm import Session
 from controllers.repositories.database import get_db 
 
