@@ -15,14 +15,14 @@ async def consultar_horarios(db: Session = Depends(get_db)):
 async def consultar_horario(id: int, db: Session = Depends(get_db)):
     return horario_controller.obtener_horario_por_id(id, db)
 
-@horario_router.post("/crear-usuario", response_model=Horario, status_code=201)
+@horario_router.post("/crear-horario", response_model=Horario, status_code=201)
 async def crear_horario(usuario: Horario, db: Session = Depends(get_db)):
     return horario_controller.crear_horario(usuario, db)
 
-@horario_router.put("/actualizar-usuario/{id}", response_model=Horario)
+@horario_router.put("/actualizar-horario/{id}", response_model=Horario)
 async def actualizar_horario(id: int, usuario: Horario, db: Session = Depends(get_db)):
     return horario_controller.actualizar_horario(id, usuario, db)
 
-@horario_router.delete("/eliminar-usuario/{id}", status_code=200)
+@horario_router.delete("/eliminar-horario/{id}", status_code=200)
 async def eliminar_horario(id: int, db: Session = Depends(get_db)):
     return horario_controller.eliminar_horario(id, db)
