@@ -12,6 +12,8 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+    networks:
+      - red_compartida
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -27,6 +29,12 @@ services:
       - DATABASE_URL=postgresql://postgres:root@db:5432/gestion_espacios
     ports:
       - "8000:8000"
+    networks:
+      - red_compartida
 
 volumes:
   db_data:
+
+networks:
+  red_compartida:
+    driver: bridge
