@@ -16,7 +16,7 @@ permissions:
   packages: write
 
 jobs:
-  ms-usuarios_test_and_build:
+  ms-asignaturas_test_and_build:
 
     runs-on: ubuntu-latest
 
