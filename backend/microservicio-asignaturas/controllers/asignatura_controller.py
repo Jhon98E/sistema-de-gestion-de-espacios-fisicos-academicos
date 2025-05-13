@@ -19,7 +19,7 @@ def crear_asignatura(asignatura: Asignatura, db: Session):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"La asignatura {asignatura.nombre} ya existe.")
     nueva_asignatura = AsignaturaDB(
         nombre=asignatura.nombre,
-        programa=asignatura.programa
+        codigo_asignatura=asignatura.codigo_asignatura
     )
     db.add(nueva_asignatura)
     db.commit()
@@ -32,7 +32,7 @@ def modificar_asignatura(id: int, asignatura: Asignatura, db: Session):
     if not asignatura_db:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"La asignatura con ID {id} no fue encontrada.")
     asignatura_db.nombre = asignatura.nombre
-    asignatura_db.programa = asignatura.programa
+    asignatura_db.codigo_asignatura = asignatura.codigo_asignatura
     db.commit()
     db.refresh(asignatura_db)
     return asignatura_db

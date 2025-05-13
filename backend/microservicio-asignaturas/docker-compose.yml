@@ -1,33 +1,15 @@
-version: '3'
-
 services:
-  db:
-    image: postgres:15-alpine
-    container_name: postgres_db
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=root
-      - POSTGRES_DB=gestion_espacios
-    ports:
-      - "5432:5432"
-    volumes:
-      - db_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
 
   microservicio:
     build: .
     container_name: ms-asignaturas
-    depends_on:
-      db:
-        condition: service_healthy
     environment:
-      - DATABASE_URL=postgresql://postgres:root@db:5432/gestion_espacios
+      - DATABASE_URL=postgresql://postgres:root@db:5432/asignacion_espacios
     ports:
-      - "8000:8000"
+      - "8002:8002"
+    networks:
+      - red_compartida
 
-volumes:
-  db_data:
+networks:
+  red_compartida:
+    external: true
