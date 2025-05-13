@@ -1,0 +1,160 @@
+import httpx
+from sqlalchemy.orm import Session
+from models.external.asignatura_programa_cohorte import AsignaturaProgramaCohorte
+from models.external.asignatura_programa_cohorte_detalle import AsignaturaProgramaCohorteDetalle
+from models.external.asignatura_programa import AsignaturaPrograma
+from models.horario_model import HorarioDB
+from fastapi import HTTPException, status
+from sqlalchemy import and_
+
+# URL de otros microservicios (ajustar según los servicios disponibles)
+PROGRAMAS_URL = "http://ms-programas:8001/programas"
+COHORTES_URL = "http://ms-cohortes:8003/cohortes"
+SALONES_URL = "http://ms-salones:8004/salones"
+# CRUD para AsignaturaProgramaCohorte
+def obtener_asignaturas_programas_cohortes(db: Session):
+    return db.query(AsignaturaProgramaCohorte).all()
+
+def obtener_asignatura_programa_cohorte_por_id(id: int, db: Session):
+    return db.query(AsignaturaProgramaCohorte).filter(AsignaturaProgramaCohorte.id == id).first()
+
+
+
+
+
+# ✅ Puedes replicar para programa_id, cohorte_id si lo necesitas
+async def verificar_programa_existe(programa_id: int):
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{PROGRAMAS_URL}/{programa_id}")
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"El programa con ID {programa_id} no existe en el microservicio de programas."
+            )
+        
+
+# ✅ Puedes replicar para cohorte_id si lo necesitas
+async def verificar_cohorte_existe(cohorte_id: int):
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{COHORTES_URL}/{cohorte_id}")
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"El cohorte con ID {cohorte_id} no existe en el microservicio de cohortes."
+            )
+# ✅ Puedes replicar para salon_id si lo necesitas
+async def verificar_salon_existe(salon_id: int):
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{SALONES_URL}/{salon_id}")
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"El programa con ID {SALONES_URL} no existe en el microservicio de programas."
+            )
+
+# ✅ NUEVO: controlador que valida antes de guardar
+async def crear_asignatura_programa_cohorte(asignatura_programa_cohorte_data, db: Session):
+    # 1. Buscar la asignatura_programa por ID
+    asignatura_programa = db.query(AsignaturaPrograma).filter(
+        AsignaturaPrograma.id == asignatura_programa_cohorte_data.asignatura_programa_id
+    ).first()
+
+    if not asignatura_programa:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Asignatura-Programa no encontrada")
+
+    # 2. Obtener el programa_id desde la relación
+    programa_id = asignatura_programa.programa_id
+
+    # 3. Validar que el programa exista
+    await verificar_programa_existe(programa_id)
+
+    await verificar_salon_existe(asignatura_programa_cohorte_data.salon_id)
+    
+
+    # 4. Validar que el cohorte exista (si es necesario, descomentar este paso)
+    # await verificar_cohorte_existe(asignatura_programa_cohorte_data.cohorte_id)
+
+    # 5. Validar que el horario exista
+    horario_db = db.query(HorarioDB).filter(HorarioDB.id == asignatura_programa_cohorte_data.horario_id).first()
+    if not horario_db:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Horario no encontrado")
+
+    # 6. Crear el objeto
+    asignatura_programa_cohorte = AsignaturaProgramaCohorte(
+        asignatura_programa_id=asignatura_programa_cohorte_data.asignatura_programa_id,
+        salon_id=asignatura_programa_cohorte_data.salon_id,
+        horario_id=asignatura_programa_cohorte_data.horario_id,
+        fecha_inicio=asignatura_programa_cohorte_data.fecha_inicio,
+        fecha_fin=asignatura_programa_cohorte_data.fecha_fin
+    )
+
+    db.add(asignatura_programa_cohorte)
+    db.commit()
+    db.refresh(asignatura_programa_cohorte)
+
+    # No necesitas modificar nada más aquí, solo devolver el objeto
+    return asignatura_programa_cohorte 
+def eliminar_asignatura_programa_cohorte(id: int, db: Session):
+    asignatura_programa = db.query(AsignaturaProgramaCohorte).filter(AsignaturaProgramaCohorte.id == id).first()
+    if asignatura_programa:
+        db.delete(asignatura_programa)
+        db.commit()
+        return {"message": f"Asig. Programa Cohorte con ID {id} eliminado correctamente"}
+    return {"message": f"Asig. Programa Cohorte con ID {id} no encontrado"}
+
+# CRUD para AsignaturaProgramaCohorteDetalle
+def obtener_asignaturas_programas_cohortes_detalle(db: Session):
+    return db.query(AsignaturaProgramaCohorteDetalle).all()
+
+def obtener_asignatura_programa_cohorte_detalle_por_id(id: int, db: Session):
+    return db.query(AsignaturaProgramaCohorteDetalle).filter(AsignaturaProgramaCohorteDetalle.id == id).first()
+
+
+
+async def crear_asignatura_programa_cohorte_detalle(asignatura_programa_cohorte_id: int, cohorte_id: int, db: Session):
+    asignatura_programa_cohorte = db.query(AsignaturaProgramaCohorte).filter(
+        AsignaturaProgramaCohorte.id == asignatura_programa_cohorte_id
+    ).first()
+
+    if not asignatura_programa_cohorte:
+        raise HTTPException(status_code=404, detail="Asignatura-Programa-Cohorte no encontrada")
+
+    # Validar existencia del cohorte
+    await verificar_cohorte_existe(cohorte_id)
+
+    # Verificar si ya existe un detalle con esa combinación
+    existente = db.query(AsignaturaProgramaCohorteDetalle).filter(
+        and_(
+            AsignaturaProgramaCohorteDetalle.asignatura_programa_cohorte_id == asignatura_programa_cohorte_id,
+            AsignaturaProgramaCohorteDetalle.cohorte_id == cohorte_id
+        )
+    ).first()
+
+    if existente:
+        raise HTTPException(
+            status_code=400,
+            detail=f"La cohorte con ID {cohorte_id} ya está asociada a esa asignatura-programa-cohorte"
+        )
+
+    detalle = AsignaturaProgramaCohorteDetalle(
+        asignatura_programa_cohorte_id=asignatura_programa_cohorte_id,
+        cohorte_id=cohorte_id
+    )
+    db.add(detalle)
+    db.commit()
+    db.refresh(detalle)
+
+    return {
+        "message": "Detalle creado correctamente",
+        "data": detalle.id
+    }
+
+
+
+def eliminar_asignatura_programa_cohorte_detalle(id: int, db: Session):
+    asignatura_programa_cohorte_detalle = db.query(AsignaturaProgramaCohorteDetalle).filter(AsignaturaProgramaCohorteDetalle.id == id).first()
+    if asignatura_programa_cohorte_detalle:
+        db.delete(asignatura_programa_cohorte_detalle)
+        db.commit()
+        return {"message": f"Detalle con ID {id} eliminado correctamente"}
+    return {"message": f"Detalle con ID {id} no encontrado"}
