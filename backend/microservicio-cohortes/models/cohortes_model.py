@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from sqlalchemy import Column, Integer, String, ForeignKey, Date
 from controllers.repositories.database import Base
-from models.external.programa_model import Programa
 from sqlalchemy.orm import relationship
 from datetime import date
 

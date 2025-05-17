@@ -17,7 +17,7 @@ permissions:
   packages: write
 
 jobs:
-  ms-usuarios_test_and_build:
+  ms-cohortes_test_and_build:
 
     runs-on: ubuntu-latest
 

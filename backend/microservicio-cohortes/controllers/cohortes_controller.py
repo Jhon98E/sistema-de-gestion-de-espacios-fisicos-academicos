@@ -2,7 +2,6 @@ from models.cohortes_model import Cohorte, CohorteDB
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 import httpx
-from models.external.programa_model import Programa
 
 
 PROGRAMAS_URL = "http://ms-programas:8001/programas"  # URL de tu microservicio de programas
