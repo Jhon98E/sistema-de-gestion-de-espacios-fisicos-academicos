@@ -2,6 +2,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from controllers.repositories.database import Base, get_db
+from models.external.asignatura_programa import AsignaturaPrograma # noqa: F401
 from fastapi.testclient import TestClient
 from main import app
 
