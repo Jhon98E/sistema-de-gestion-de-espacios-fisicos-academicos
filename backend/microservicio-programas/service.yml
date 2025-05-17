@@ -1,12 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: programas-service
+  name: ms-programas
 spec:
   selector:
-    app: programas
+    app: programas  # Asegúrate de que el selector coincida con la etiqueta de tu pod
   ports:
     - protocol: TCP
       port: 8001
       targetPort: 8001
-  type: ClusterIP
