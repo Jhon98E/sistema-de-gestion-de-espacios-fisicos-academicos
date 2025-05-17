@@ -43,7 +43,7 @@ jobs:
     - name: Testing con pytest
       working-directory: backend/microservicio-cohortes
       run: |
-        pytest -v
+        pytest -v --disable-warnings
 
     - name: Accediendo a DockerHub
       uses: docker/login-action@v3

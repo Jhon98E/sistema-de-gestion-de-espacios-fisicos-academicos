@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 
 # Formato: postgresql://usuario:password@host:puerto/nombre_bd
-BASE_DE_DATOS_URL = os.getenv("DATABASE_URL", "postgresql://postgres:root@localhost:5432/gestion_cohortes")
+BASE_DE_DATOS_URL = os.getenv("DATABASE_URL", "postgresql://postgres:root@db:5432/asignacion_espacios")
 
 
 engine = create_engine(url=BASE_DE_DATOS_URL, echo=True)  # echo=True para ver las queries en consola (opcional)
