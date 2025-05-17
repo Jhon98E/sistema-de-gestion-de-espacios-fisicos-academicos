@@ -1,7 +1,6 @@
 # test_programa.py
 from fastapi.testclient import TestClient
-from main import app  # Asume que tu aplicación está en el archivo main.py
-from models.schemas.programa_schemas import Programa 
+from models.schemas.programa_schemas import Programa # noqa: F401
 
 def test_crear_programa(client: TestClient):
     response = client.post("/programas/", json={
