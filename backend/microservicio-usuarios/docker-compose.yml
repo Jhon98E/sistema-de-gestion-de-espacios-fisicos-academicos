@@ -7,7 +7,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=root
-      - POSTGRES_DB=gestion_espacios
+      - POSTGRES_DB=asignacion_espacios
     ports:
       - "5432:5432"
     volumes:
@@ -26,7 +26,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      - DATABASE_URL=postgresql://postgres:root@db:5432/gestion_espacios
+      - DATABASE_URL=postgresql://postgres:root@db:5432/asignacion_espacios
     ports:
       - "8000:8000"
     networks:
@@ -37,4 +37,5 @@ volumes:
 
 networks:
   red_compartida:
+    name: red_compartida
     driver: bridge

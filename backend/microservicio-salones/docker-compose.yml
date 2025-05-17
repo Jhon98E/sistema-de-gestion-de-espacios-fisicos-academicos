@@ -1,12 +1,12 @@
 services:
 
-  microservicio_programas:
+  microservicio-salones:
     build: .
     container_name: ms-salones
     environment:
       - DATABASE_URL=postgresql://postgres:root@db:5432/asignacion_espacios
     ports:
-      - "8001:8001"
+      - "8004:8004"
     networks:
       - red_compartida
 

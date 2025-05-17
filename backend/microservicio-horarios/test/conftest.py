@@ -5,7 +5,6 @@ from sqlalchemy.orm import sessionmaker
 
 from main import app
 from controllers.repositories.database import Base, get_db
-from models.horario_model import HorarioDB
 
 # 🔧 Crear base de datos en memoria
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"  # También puedes usar "sqlite:///:memory:"
