@@ -2,6 +2,8 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from controllers.repositories.database import Base, get_db
+from models.external.programa_model import Programa  # Importar modelo Programa
+from models.cohortes_model import CohorteDB  # Importar modelo CohorteDB
 from fastapi.testclient import TestClient
 from main import app
 
