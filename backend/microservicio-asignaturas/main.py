@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from routes import asignatura_router
+from views.routes import asignatura_router
 from contextlib import asynccontextmanager
-from database import Base, engine
+from controllers.repositories.database import Base, engine
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

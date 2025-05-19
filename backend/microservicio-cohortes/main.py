@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from routes.cohortes_router import cohortes_route
+from views.routes.cohortes_router import cohortes_route
 from contextlib import asynccontextmanager
-from database import Base, engine
+from controllers.repositories.database import Base, engine
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -12,4 +12,3 @@ app = FastAPI(lifespan=lifespan)
 app.title = "Microservicio Gestion de Cohortes"
 
 app.include_router(cohortes_route)
-

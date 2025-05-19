@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from database import Base, engine
-from routes import horario_routes
+from controllers.repositories.database import Base, engine
+from views.routes import horario_routes
+from views.routes import asignatura_programa_cohorte_routes
 
 
 @asynccontextmanager
@@ -16,4 +17,6 @@ app = FastAPI(lifespan=lifespan, title="Microservicio de Gestion de Horarios")
 
 # Inicializar Rutas
 app.include_router(horario_routes.horario_router)
-app.include_router(horario_routes.horario_router)
+
+app.include_router(asignatura_programa_cohorte_routes.router)
+
