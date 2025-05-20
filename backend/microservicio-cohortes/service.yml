@@ -4,9 +4,9 @@ metadata:
   name: ms-cohortes
 spec:
   selector:
-    app: cohortes  # Asegúrate de que el selector coincida con la etiqueta de tu pod
+    app: cohortes  
   ports:
     - protocol: TCP
-      port: 8003  # El puerto en el que Kubernetes expondrá el servicio
-      targetPort: 8003  # El puerto del contenedor en el pod
-  type: ClusterIP  # Este es el tipo por defecto, accesible solo dentro del cluster
+      port: 8003  
+      targetPort: 8003 
+  type: ClusterIP  
