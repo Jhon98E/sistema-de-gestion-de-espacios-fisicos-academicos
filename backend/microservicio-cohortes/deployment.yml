@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: ms-cohortes
-        image: irenly/ms-cohortes:latest
+        image: jhonenriquez98/ms-cohortes:latest
         ports:
         - containerPort: 8003
         env:
