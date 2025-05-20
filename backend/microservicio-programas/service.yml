@@ -4,7 +4,7 @@ metadata:
   name: ms-programas
 spec:
   selector:
-    app: programas  # Asegúrate de que el selector coincida con la etiqueta de tu pod
+    app: programas
   ports:
     - protocol: TCP
       port: 8001
