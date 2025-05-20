@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: ms-programas
-        image: jhonenriquez98/ms-programas:latest
+        image: irenly/ms-programas:latest
         ports:
         - containerPort: 8001
         env:

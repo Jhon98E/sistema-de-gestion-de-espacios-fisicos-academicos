@@ -10,8 +10,8 @@ class Cohorte(BaseModel):
     id: int
     nombre: str
     programa_id: int
-    fecha_inicio: date
-    fecha_fin: date
+    fecha_inicio: date   # Cambiado de str a date
+    fecha_fin: date      # Cambiado de str a date
     estado: str
 
     class Config:
@@ -24,8 +24,8 @@ class CohorteDB(Base):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, index=True, nullable=False)
     programa_id = Column(Integer, ForeignKey("programas.id"), nullable=False)
-    fecha_inicio = Column(Date, nullable=False)
-    fecha_fin = Column(Date, nullable=False)
+    fecha_inicio = Column(Date, nullable=False)   # Cambiado de String a Date
+    fecha_fin = Column(Date, nullable=False)      # Cambiado de String a Date
     estado = Column(String, index=True, nullable=False)
 
     programa = relationship("Programa", back_populates="cohortes")
