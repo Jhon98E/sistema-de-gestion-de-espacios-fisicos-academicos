@@ -1,10 +1,9 @@
 from typing import Optional
 from enum import Enum
-from pydantic import BaseModel, root_validator
-from sqlalchemy import Column, String, Integer, Enum as SQLAlchemyEnum, Time
+from pydantic import BaseModel
+from sqlalchemy import Column, Integer, Enum as SQLAlchemyEnum, Time
 from controllers.repositories.database import Base
 import datetime
-from sqlalchemy.orm import relationship
 
 
 # Enum de Python para los días de la semana

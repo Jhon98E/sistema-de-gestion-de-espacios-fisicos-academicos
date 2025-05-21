@@ -90,7 +90,9 @@ async def crear_asignatura_programa_cohorte(asignatura_programa_cohorte_data, db
     db.refresh(asignatura_programa_cohorte)
 
     # No necesitas modificar nada más aquí, solo devolver el objeto
-    return asignatura_programa_cohorte 
+    return asignatura_programa_cohorte
+
+
 def eliminar_asignatura_programa_cohorte(id: int, db: Session):
     asignatura_programa = db.query(AsignaturaProgramaCohorte).filter(AsignaturaProgramaCohorte.id == id).first()
     if asignatura_programa:
@@ -103,9 +105,9 @@ def eliminar_asignatura_programa_cohorte(id: int, db: Session):
 def obtener_asignaturas_programas_cohortes_detalle(db: Session):
     return db.query(AsignaturaProgramaCohorteDetalle).all()
 
+
 def obtener_asignatura_programa_cohorte_detalle_por_id(id: int, db: Session):
     return db.query(AsignaturaProgramaCohorteDetalle).filter(AsignaturaProgramaCohorteDetalle.id == id).first()
-
 
 
 async def crear_asignatura_programa_cohorte_detalle(asignatura_programa_cohorte_id: int, cohorte_id: int, db: Session):
@@ -145,7 +147,6 @@ async def crear_asignatura_programa_cohorte_detalle(asignatura_programa_cohorte_
         "message": "Detalle creado correctamente",
         "data": detalle.id
     }
-
 
 
 def eliminar_asignatura_programa_cohorte_detalle(id: int, db: Session):

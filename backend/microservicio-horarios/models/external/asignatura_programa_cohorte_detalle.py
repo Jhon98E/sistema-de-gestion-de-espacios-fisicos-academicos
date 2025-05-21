@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 from controllers.repositories.database import Base
-from models.external.cohortes_model import CohorteDB
-from models.external.asignatura_programa_cohorte import AsignaturaProgramaCohorte
+from models.external.cohortes_model import CohorteDB # noqa: F401
+from models.external.asignatura_programa_cohorte import AsignaturaProgramaCohorte # noqa: F401
 
 class AsignaturaProgramaCohorteDetalle(Base):
     __tablename__ = "asignaturas_programas_cohortes_detalles"

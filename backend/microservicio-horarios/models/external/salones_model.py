@@ -2,7 +2,6 @@ from pydantic import BaseModel
 from typing import Optional
 from controllers.repositories.database import Base
 from sqlalchemy import Column, String, Integer, Boolean
-from sqlalchemy.orm import relationship
 
 class Salon(BaseModel):
     id: Optional[int] = None

@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: asignaturas-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: asignaturas
+  template:
+    metadata:
+      labels:
+        app: asignaturas
+    spec:
+      containers:
+      - name: ms-asignaturas
+        image: jhonenriquez98/ms-asignaturas:latest
+        ports:
+        - containerPort: 8002
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://postgres:root@postgres:5432/asignacion_espacios"

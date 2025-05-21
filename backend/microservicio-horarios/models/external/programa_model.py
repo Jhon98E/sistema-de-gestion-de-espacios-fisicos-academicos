@@ -1,6 +1,5 @@
 from sqlalchemy import Column, Integer, String
 from controllers.repositories.database import Base
-from sqlalchemy.orm import relationship
 
 class Programa(Base):
     __tablename__ = "programas"
