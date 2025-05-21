@@ -47,7 +47,6 @@ def get_asignatura_programa_cohorte_detalle(id: int, db: Session = Depends(get_d
     return obtener_asignaturas_programas_cohortes_detalle(id, db)
 
 
-
 @router.delete("/asignaturas_programas_cohortes_detalles/{id}")
 def delete_asignatura_programa_cohorte_detalle(id: int, db: Session = Depends(get_db)):
     return eliminar_asignatura_programa_cohorte_detalle(id, db)

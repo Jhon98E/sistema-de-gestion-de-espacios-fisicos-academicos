@@ -2,9 +2,14 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from unittest.mock import patch
+import os
 
 from main import app
 from controllers.repositories.database import Base, get_db
+
+# Deshabilitar las llamadas HTTP durante las pruebas
+os.environ["PYTEST_RUNNING"] = "true"
 
 # 🔧 Crear base de datos en memoria
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"  # También puedes usar "sqlite:///:memory:"
@@ -24,10 +29,12 @@ def db_session():
 
 @pytest.fixture(scope="function")
 def client(db_session):
-    def override_get_db():
-        try:
-            yield db_session
-        finally:
-            pass
-    app.dependency_overrides[get_db] = override_get_db
-    return TestClient(app)
+    # Parchear las llamadas HTTP externas
+    with patch("httpx.AsyncClient"):
+        def override_get_db():
+            try:
+                yield db_session
+            finally:
+                pass
+        app.dependency_overrides[get_db] = override_get_db
+        yield TestClient(app)

@@ -5,9 +5,6 @@ from models.external.asignatura_model import AsignaturaDB
 from models.external.programa_model import Programa
 
 
-
-
-
 # Tabla puente entre Asignatura y Programa
 class AsignaturaPrograma(Base):
     __tablename__ = "asignaturas_programas"

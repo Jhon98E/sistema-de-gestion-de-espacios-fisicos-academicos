@@ -19,9 +19,6 @@ def obtener_asignatura_programa_cohorte_por_id(id: int, db: Session):
     return db.query(AsignaturaProgramaCohorte).filter(AsignaturaProgramaCohorte.id == id).first()
 
 
-
-
-
 # ✅ Puedes replicar para programa_id, cohorte_id si lo necesitas
 async def verificar_programa_existe(programa_id: int):
     async with httpx.AsyncClient() as client:
