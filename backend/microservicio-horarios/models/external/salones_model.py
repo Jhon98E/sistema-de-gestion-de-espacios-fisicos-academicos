@@ -14,7 +14,6 @@ class Salon(BaseModel):
         orm_mode = True
 
 
-
 class SalonDB(Base):
     __tablename__ = "salones"
 
