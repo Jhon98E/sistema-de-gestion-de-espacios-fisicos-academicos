@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 from controllers.repositories.database import Base
-from models.external.asignatura_model import AsignaturaDB
-from models.external.programa_model import Programa
+from models.external.asignatura_model import AsignaturaDB # noqa: F401
+from models.external.programa_model import Programa # noqa: F401
 
 
 # Tabla puente entre Asignatura y Programa

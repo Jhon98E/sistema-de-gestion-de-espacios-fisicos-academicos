@@ -1,4 +1,4 @@
-from datetime import time
+from datetime import time # noqa: F401
 
 def test_crear_horario(client):
     nuevo = {

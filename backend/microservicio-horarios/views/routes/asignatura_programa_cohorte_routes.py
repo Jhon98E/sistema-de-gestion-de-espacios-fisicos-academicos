@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from controllers.external.asignatura_programa_cohorte_controller import obtener_asignaturas_programas_cohortes, obtener_asignatura_programa_cohorte_por_id, crear_asignatura_programa_cohorte, eliminar_asignatura_programa_cohorte, obtener_asignaturas_programas_cohortes_detalle, crear_asignatura_programa_cohorte_detalle, crear_asignatura_programa_cohorte_detalle, eliminar_asignatura_programa_cohorte_detalle
 from controllers.repositories.database import get_db
-from models.external.asignatura_programa_cohorte import AsignaturaProgramaCohorte, AsignaturaProgramaCohorteBase
-from models.external.asignatura_programa_cohorte_detalle import AsignaturaProgramaCohorteDetalle
+from models.external.asignatura_programa_cohorte import AsignaturaProgramaCohorte, AsignaturaProgramaCohorteBase # noqa: F401
+from models.external.asignatura_programa_cohorte_detalle import AsignaturaProgramaCohorteDetalle # noqa: F401
 
 
 router = APIRouter()

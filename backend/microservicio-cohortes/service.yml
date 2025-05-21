@@ -4,9 +4,9 @@ metadata:
   name: ms-cohortes
 spec:
   selector:
-    app: cohortes  
+    app: cohortes
   ports:
     - protocol: TCP
-      port: 8003  
-      targetPort: 8003 
-  type: ClusterIP  
+      port: 8003
+      targetPort: 8003
+  type: ClusterIP

@@ -3,9 +3,9 @@ from datetime import date
 from sqlalchemy.orm import relationship
 from pydantic import BaseModel
 from controllers.repositories.database import Base
-from models.external.asignatura_programa import AsignaturaPrograma
-from models.external.salones_model import SalonDB
-from models.horario_model import HorarioDB
+from models.external.asignatura_programa import AsignaturaPrograma # noqa: F401
+from models.external.salones_model import SalonDB # noqa: F401
+from models.horario_model import HorarioDB # noqa: F401
 
 class AsignaturaProgramaCohorteBase(BaseModel):
     asignatura_programa_id: int
