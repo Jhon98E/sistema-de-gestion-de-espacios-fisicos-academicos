@@ -10,6 +10,10 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_svg: ^2.0.7
+  http: ^1.1.0
+  provider: ^6.0.5
+  shared_preferences: ^2.2.2
+  flutter_secure_storage: ^9.0.0
 
 dev_dependencies:
   flutter_test:
