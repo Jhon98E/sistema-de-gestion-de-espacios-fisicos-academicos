@@ -19,4 +19,4 @@ spec:
         - containerPort: 8000
         env:
         - name: DATABASE_URL
-          value: "postgresql://postgres:root@postgres-service:5432/asignacion_espacios"
+          value: "postgresql://postgres:root@postgres:5432/asignacion_espacios"
