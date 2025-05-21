@@ -277,6 +277,30 @@ class _RegisterFormState extends State<RegisterForm> {
                     ),
             ),
           ),
+          const SizedBox(height: 16),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF457B9D),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.arrow_back, size: 18),
+                const SizedBox(width: 8),
+                const Text(
+                  'Volver al Login',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
