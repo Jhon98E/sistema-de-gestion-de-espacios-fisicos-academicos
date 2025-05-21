@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: cohortes-service
+  name: ms-cohortes
 spec:
   selector:
-    app: cohortes
+    app: cohortes  
   ports:
     - protocol: TCP
-      port: 8000
-      targetPort: 8000
-  type: ClusterIP
+      port: 8003  
+      targetPort: 8003 
+  type: ClusterIP  

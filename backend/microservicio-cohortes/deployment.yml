@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cohortes-deployment
@@ -16,7 +16,7 @@ spec:
       - name: ms-cohortes
         image: jhonenriquez98/ms-cohortes:latest
         ports:
-        - containerPort: 8000
+        - containerPort: 8003
         env:
         - name: DATABASE_URL
-          value: "postgresql://postgres:root@postgres-service:5432/asignacion_espacios"
+          value: "postgresql://postgres:root@postgres:5432/asignacion_espacios"
