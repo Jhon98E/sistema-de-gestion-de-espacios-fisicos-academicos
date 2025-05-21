@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: horarios-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: horarios
+  template:
+    metadata:
+      labels:
+        app: horarios
+    spec:
+      containers:
+      - name: ms-horarios
+        image: jhonenriquez98/ms-horarios:latest
+        ports:
+        - containerPort: 8005
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://postgres:root@postgres:5432/asignacion_espacios"
