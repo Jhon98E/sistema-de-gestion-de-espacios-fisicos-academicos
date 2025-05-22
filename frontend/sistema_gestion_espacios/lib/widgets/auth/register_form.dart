@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../models/user_model.dart';
+import '../../models/usuario.dart';
 
 class RegisterForm extends StatefulWidget {
   const RegisterForm({super.key});
@@ -31,7 +31,7 @@ class _RegisterFormState extends State<RegisterForm> {
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      final user = User(
+      final usuario = Usuario(
         nombre: _nombreController.text,
         apellido: _apellidoController.text,
         codigoUsuario: _codigoUsuarioController.text,
@@ -41,7 +41,7 @@ class _RegisterFormState extends State<RegisterForm> {
       );
 
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final success = await authProvider.register(user);
+      final success = await authProvider.register(usuario);
 
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

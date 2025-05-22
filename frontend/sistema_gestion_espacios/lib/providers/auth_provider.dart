@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../models/user_model.dart';
+import '../models/usuario.dart';
 import '../services/auth_service.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -15,13 +15,13 @@ class AuthProvider with ChangeNotifier {
   String? get token => _token;
   bool get isAuthenticated => _token != null;
 
-  Future<bool> register(User user) async {
+  Future<bool> register(Usuario usuario) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final response = await _authService.register(user);
+      final response = await _authService.register(usuario);
       _isLoading = false;
       notifyListeners();
       return true;
