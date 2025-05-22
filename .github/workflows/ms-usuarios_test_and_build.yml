@@ -79,11 +79,10 @@ jobs:
         echo "${{ secrets.KUBECONFIG_DATA }}" | base64 -d > $HOME/.kube/config
     
     - name: Actualizar imagen en deployment
-      working-directory: backend/microservicio-usuarios/k8s
       run: |
-        sed -i "s|jhonenriquez98/ms-usuarios:.*|${{ secrets.DOCKERHUB_USERNAME }}/ms-usuarios:${{ github.sha }}|g" deployment.yaml
+        sed -i "s|jhonenriquez98/ms-usuarios:.*|${{ secrets.DOCKERHUB_USERNAME }}/ms-usuarios:${{ github.sha }}|g" backend/microservicio-usuarios/k8s/deployment.yml
     
     - name: Aplicar deployment
       run: |
-        kubectl apply -f backend/microservicio-usuarios/k8s/deployment.yaml
-        kubectl apply -f backend/microservicio-usuarios/k8s/service.yaml
+        kubectl apply -f backend/microservicio-usuarios/k8s/deployment.yml
+        kubectl apply -f backend/microservicio-usuarios/k8s/service.yml
