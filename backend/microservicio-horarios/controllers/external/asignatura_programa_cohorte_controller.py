@@ -6,7 +6,6 @@ from models.external.asignatura_programa import AsignaturaPrograma
 from models.horario_model import HorarioDB
 from fastapi import HTTPException, status
 from sqlalchemy import and_
-from typing import Dict
 
 # URL de otros microservicios (ajustar según los servicios disponibles)
 PROGRAMAS_URL = "http://ms-programas:8001/programas"
