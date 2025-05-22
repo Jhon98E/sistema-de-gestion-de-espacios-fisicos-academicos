@@ -2,8 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/asignatura_provider.dart';
 import 'screens/auth/login_view.dart';
 import 'screens/salones_screen.dart';
+import 'screens/asignaturas_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -18,11 +20,12 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => AsignaturaProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Sistema de Gestión de Espacios',
-        theme: AppTheme.theme,
+        title: 'Sistema de Gestión de Espacios Físicos Académicos',
+        theme: AppTheme.defaultTheme,
         home: const AuthWrapper(),
       ),
     );
@@ -61,7 +64,7 @@ class _HomePageState extends State<HomePage> {
     const Center(child: Text('Notificaciones')),
     const Center(child: Text('Horarios')),
     const Center(child: Text('Cohortes')),
-    const Center(child: Text('Asignaturas')),
+    const AsignaturasScreen(),
   ];
 
   @override
@@ -81,41 +84,79 @@ class _HomePageState extends State<HomePage> {
                   _selectedIndex = index;
                 });
               },
-              leading: IconButton(
-                icon: Icon(
-                  _isDrawerOpen ? Icons.chevron_left : Icons.chevron_right,
-                  color: Colors.white,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _isDrawerOpen = !_isDrawerOpen;
-                  });
-                },
+              useIndicator: true,
+              indicatorColor: Colors.white.withOpacity(0.2),
+              selectedIconTheme: const IconThemeData(
+                color: Colors.white,
+                size: 28,
+              ),
+              unselectedIconTheme: IconThemeData(
+                color: Colors.white.withOpacity(0.7),
+                size: 24,
+              ),
+              selectedLabelTextStyle: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+              unselectedLabelTextStyle: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 14,
+              ),
+              leading: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  IconButton(
+                    icon: Icon(
+                      _isDrawerOpen ? Icons.chevron_left : Icons.chevron_right,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isDrawerOpen = !_isDrawerOpen;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  if (_isDrawerOpen)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'Sistema de Gestión de Espacios ',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                ],
               ),
               destinations: const [
                 NavigationRailDestination(
-                  icon: Icon(Icons.meeting_room, color: Colors.white),
-                  label: Text('Salones', style: TextStyle(color: Colors.white)),
+                  icon: Icon(Icons.meeting_room),
+                  label: Text('Salones'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.school, color: Colors.white),
-                  label: Text('Programas', style: TextStyle(color: Colors.white)),
+                  icon: Icon(Icons.school),
+                  label: Text('Programas'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.notifications, color: Colors.white),
-                  label: Text('Notificaciones', style: TextStyle(color: Colors.white)),
+                  icon: Icon(Icons.notifications),
+                  label: Text('Notificaciones'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.schedule, color: Colors.white),
-                  label: Text('Horarios', style: TextStyle(color: Colors.white)),
+                  icon: Icon(Icons.schedule),
+                  label: Text('Horarios'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.groups, color: Colors.white),
-                  label: Text('Cohortes', style: TextStyle(color: Colors.white)),
+                  icon: Icon(Icons.groups),
+                  label: Text('Cohortes'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.book, color: Colors.white),
-                  label: Text('Asignaturas', style: TextStyle(color: Colors.white)),
+                  icon: Icon(Icons.book),
+                  label: Text('Asignaturas'),
                 ),
               ],
             ),
@@ -129,3 +170,4 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
