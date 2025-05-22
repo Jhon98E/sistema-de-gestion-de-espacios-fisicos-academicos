@@ -57,7 +57,7 @@ def test_validate_token_valid(client: TestClient):
     response = client.post("/auth/validate-token", headers=headers)
     assert response.status_code == 200
     data = response.json()
-    assert data["valid"] == True
+    assert data["valid"]
     assert "user_id" in data
     assert "codigo_usuario" in data
     assert data["codigo_usuario"] == "VALIDATE001"

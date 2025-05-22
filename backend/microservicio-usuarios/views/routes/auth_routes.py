@@ -38,7 +38,7 @@ async def validate_token(token: str = Depends(oauth2_scheme), db: Session = Depe
         }
     except HTTPException as e:
         raise e
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token inválido",
