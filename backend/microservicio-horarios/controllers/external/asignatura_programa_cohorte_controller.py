@@ -1,11 +1,12 @@
 import httpx
 from sqlalchemy.orm import Session
-from models.external.asignatura_programa_cohorte import AsignaturaProgramaCohorte
+from models.external.asignatura_programa_cohorte import AsignaturaProgramaCohorte, AsignaturaProgramaCohorteBase
 from models.external.asignatura_programa_cohorte_detalle import AsignaturaProgramaCohorteDetalle
 from models.external.asignatura_programa import AsignaturaPrograma
 from models.horario_model import HorarioDB
 from fastapi import HTTPException, status
 from sqlalchemy import and_
+from typing import Dict, Any # Importar tipos para datos de actualización
 
 # URL de otros microservicios (ajustar según los servicios disponibles)
 PROGRAMAS_URL = "http://ms-programas:8001/programas"
@@ -156,3 +157,53 @@ def eliminar_asignatura_programa_cohorte_detalle(id: int, db: Session):
         db.commit()
         return {"message": f"Detalle con ID {id} eliminado correctamente"}
     return {"message": f"Detalle con ID {id} no encontrado"}
+
+# ✅ NUEVO: Método para actualizar AsignaturaProgramaCohorte
+async def actualizar_asignatura_programa_cohorte(
+    id: int,
+    asignatura_programa_cohorte_data: AsignaturaProgramaCohorteBase, # <- Usar tu schema Pydantic aquí
+    db: Session
+):
+    # 1. Obtener el registro existente
+    asignatura_programa_cohorte = db.query(AsignaturaProgramaCohorte).filter(
+        AsignaturaProgramaCohorte.id == id
+    ).first()
+
+    if not asignatura_programa_cohorte:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Asignatura-Programa-Cohorte con ID {id} no encontrada"
+        )
+
+    # Convertir el objeto Pydantic a diccionario, excluyendo campos no enviados en la solicitud
+    update_data_dict = asignatura_programa_cohorte_data.model_dump(exclude_unset=True)
+
+    # 2. Validar existencia de relaciones (si los IDs se actualizan)
+    if 'asignatura_programa_id' in update_data_dict:
+        asignatura_programa = db.query(AsignaturaPrograma).filter(
+            AsignaturaPrograma.id == update_data_dict['asignatura_programa_id']
+        ).first()
+        if not asignatura_programa:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Asignatura-Programa no encontrada")
+        # Opcional: Validar existencia del programa asociado a la nueva asignatura_programa
+        # programa_id = asignatura_programa.programa_id
+        # await verificar_programa_existe(programa_id)
+
+    if 'salon_id' in update_data_dict:
+        await verificar_salon_existe(update_data_dict['salon_id'])
+    
+    if 'horario_id' in update_data_dict:
+        horario_db = db.query(HorarioDB).filter(HorarioDB.id == update_data_dict['horario_id']).first()
+        if not horario_db:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Horario no encontrado")
+            
+    # 3. Actualizar los campos del objeto existente
+    for key, value in update_data_dict.items():
+        # Solo actualizar campos que existen en el modelo y que no son el ID
+        if hasattr(asignatura_programa_cohorte, key) and key != 'id':
+            setattr(asignatura_programa_cohorte, key, value)
+
+    db.commit()
+    db.refresh(asignatura_programa_cohorte)
+
+    return asignatura_programa_cohorte
