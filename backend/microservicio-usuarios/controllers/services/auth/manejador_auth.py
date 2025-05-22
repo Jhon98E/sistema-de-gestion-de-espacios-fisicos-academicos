@@ -7,14 +7,11 @@ from controllers.repositories.database import get_db
 from sqlalchemy.orm import Session
 from models.usuario_model import UsuarioDB
 
-
 SECRET_KEY = "TU_SECRETO_SUPER_SEGURO"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 def hash_password(password):
@@ -34,12 +31,18 @@ def decodificar_token_acceso(token: str):
     try:
         payload = jwt.decode(jwt=token, key=SECRET_KEY, algorithms=[ALGORITHM])
         return payload
-    except (jwt.ExpiredSignatureError, jwt.PyJWKError):
+    except jwt.ExpiredSignatureError:
         return HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, 
-                detail="Credenciales de autenticación Invalidas",
-                headers={"WWW-Authenticate": "Bearer"}
-            )
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Token expirado",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    except jwt.PyJWTError:
+        return HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Token inválido",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
     
 def consultar_usuario_actual(token: str = Depends(oauth2_scheme), db: Session = Depends(dependency=get_db)):
     excepcion_credenciales = HTTPException(
@@ -49,14 +52,14 @@ def consultar_usuario_actual(token: str = Depends(oauth2_scheme), db: Session = 
     )
 
     payload = decodificar_token_acceso(token)
-    if payload is None:
-        raise excepcion_credenciales
+    if isinstance(payload, HTTPException):
+        raise payload
     
     usuario_id = payload.get("sub")
     if usuario_id is None:
         raise excepcion_credenciales
     
-    usuario_db = db.query(UsuarioDB).filter(UsuarioDB.id == usuario_id).first()
+    usuario_db = db.query(UsuarioDB).filter(UsuarioDB.id == int(usuario_id)).first()
     if not usuario_db:
         raise excepcion_credenciales
     
