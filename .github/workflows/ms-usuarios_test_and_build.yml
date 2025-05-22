@@ -61,32 +61,32 @@ jobs:
           docker.io/${{ secrets.DOCKERHUB_USERNAME }}/ms-usuarios:latest
           docker.io/${{ secrets.DOCKERHUB_USERNAME }}/ms-usuarios:${{ github.sha }}
   
-  desplegar_a_kubernetes:
-    needs: ms-usuarios_test_and_build
-    runs-on: ubuntu-latest
-    if: false  # Deshabilitado temporalmente para testing
-    steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
+  # desplegar_a_kubernetes:
+  #   needs: ms-usuarios_test_and_build
+  #   runs-on: ubuntu-latest
+  
+  #   steps:
+  #   - name: Checkout repo
+  #     uses: actions/checkout@v4
     
-    - name: Instalar kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'latest'
+  #   - name: Instalar kubectl
+  #     uses: azure/setup-kubectl@v3
+  #     with:
+  #       version: 'latest'
     
-    - name: Configurar credenciales de Kubernetes
-      run: |
-        mkdir -p $HOME/.kube
-        echo "${{ secrets.KUBECONFIG_DATA }}" | base64 -d > $HOME/.kube/config
-        # Verificar que el kubeconfig sea válido
-        kubectl config view --minify
-        kubectl cluster-info
+  #   - name: Configurar credenciales de Kubernetes
+  #     run: |
+  #       mkdir -p $HOME/.kube
+  #       echo "${{ secrets.KUBECONFIG_DATA }}" | base64 -d > $HOME/.kube/config
+  #       # Verificar que el kubeconfig sea válido
+  #       kubectl config view --minify
+  #       kubectl cluster-info
     
-    - name: Actualizar imagen en deployment
-      run: |
-        sed -i "s|jhonenriquez98/ms-usuarios:.*|${{ secrets.DOCKERHUB_USERNAME }}/ms-usuarios:${{ github.sha }}|g" backend/microservicio-usuarios/k8s/deployment.yml
+  #   - name: Actualizar imagen en deployment
+  #     run: |
+  #       sed -i "s|jhonenriquez98/ms-usuarios:.*|${{ secrets.DOCKERHUB_USERNAME }}/ms-usuarios:${{ github.sha }}|g" backend/microservicio-usuarios/k8s/deployment.yml
     
-    - name: Aplicar deployment
-      run: |
-        kubectl apply -f backend/microservicio-usuarios/k8s/deployment.yml
-        kubectl apply -f backend/microservicio-usuarios/k8s/service.yml
+  #   - name: Aplicar deployment
+  #     run: |
+  #       kubectl apply -f backend/microservicio-usuarios/k8s/deployment.yml
+  #       kubectl apply -f backend/microservicio-usuarios/k8s/service.yml
