@@ -6,6 +6,7 @@ import 'providers/asignatura_provider.dart';
 import 'providers/programa_provider.dart';
 import 'providers/cohorte_provider.dart';
 import 'providers/horario_provider.dart';
+import 'providers/salon_provider.dart';
 import 'screens/auth/login_view.dart';
 import 'screens/salones_screen.dart';
 import 'screens/asignaturas_screen.dart';
@@ -30,6 +31,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ProgramaProvider()),
         ChangeNotifierProvider(create: (_) => CohorteProvider()),
         ChangeNotifierProvider(create: (_) => HorarioProvider()),
+        ChangeNotifierProvider(create: (_) => SalonProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
