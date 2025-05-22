@@ -4,8 +4,6 @@ from controllers.external.asignatura_programa_cohorte_controller import obtener_
 from controllers.repositories.database import get_db
 from models.external.asignatura_programa_cohorte import AsignaturaProgramaCohorteBase, AsignaturaProgramaCohorte # noqa: F401
 from models.external.asignatura_programa_cohorte_detalle import AsignaturaProgramaCohorteDetalle # noqa: F401
-from fastapi import HTTPException, status
-from typing import List
 
 
 router = APIRouter()
