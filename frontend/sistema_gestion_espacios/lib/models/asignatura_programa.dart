@@ -16,8 +16,8 @@ class AsignaturaPrograma {
   factory AsignaturaPrograma.fromJson(Map<String, dynamic> json) {
     return AsignaturaPrograma(
       id: json['id'],
-      asignaturaId: json['asignatura_id'],
-      programaId: json['programa_id'],
+      asignaturaId: json['asignatura_id'] is int ? json['asignatura_id'] : 0,
+      programaId: json['programa_id'] is int ? json['programa_id'] : 0,
       nombreAsignatura: json['nombre_asignatura'],
       nombrePrograma: json['nombre_programa'],
     );

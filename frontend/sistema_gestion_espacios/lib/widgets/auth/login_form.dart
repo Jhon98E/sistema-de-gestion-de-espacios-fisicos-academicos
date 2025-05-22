@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../main.dart'; // Import main.dart to access HomePage
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -39,8 +40,8 @@ class _LoginFormState extends State<LoginForm> {
             duration: Duration(seconds: 2),
           ),
         );
-        // Navegar a la siguiente pantalla
-        Navigator.pushReplacementNamed(context, '/home');
+        // Navegar a la siguiente pantalla y reemplazar la actual
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomePage()));
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

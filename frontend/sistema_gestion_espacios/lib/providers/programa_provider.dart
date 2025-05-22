@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/programa.dart';
 import '../models/asignatura_programa.dart';
+import '../models/asignatura.dart';
 import '../services/programas_service.dart';
 
 class ProgramaProvider with ChangeNotifier {
@@ -24,6 +25,21 @@ class ProgramaProvider with ChangeNotifier {
       _asignaturasProgramas = await ProgramaService.getAsignaturasProgramas();
     } catch (e) {
       _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadAsignaturasProgramas() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      _asignaturasProgramas = await ProgramaService.getAsignaturasProgramas();
+    } catch (e) {
+      _error = e.toString();
+      print('Error loading asignaturas programas: $_error');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -88,6 +104,7 @@ class ProgramaProvider with ChangeNotifier {
 
     try {
       final nuevaAsignacion = await ProgramaService.asignarAsignatura(asignaturaPrograma);
+      print('API response for asignarAsignatura: ${nuevaAsignacion.toJson()}');
       _asignaturasProgramas.add(nuevaAsignacion);
     } catch (e) {
       _error = e.toString();
@@ -110,6 +127,16 @@ class ProgramaProvider with ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<Programa?> getProgramaById(int id) async {
+    try {
+      final programa = _programas.firstWhere((programa) => programa.id == id);
+      return Future.value(programa);
+    } catch (e) {
+      print('Programa with id $id not found: $e');
+      return Future.value(null);
     }
   }
 } 

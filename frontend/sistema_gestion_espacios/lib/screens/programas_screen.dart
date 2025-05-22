@@ -4,6 +4,7 @@ import '../providers/programa_provider.dart';
 import '../providers/asignatura_provider.dart';
 import '../models/programa.dart';
 import '../models/asignatura_programa.dart';
+import '../models/asignatura.dart';
 import '../theme/app_theme.dart';
 
 class ProgramasScreen extends StatefulWidget {
@@ -335,11 +336,13 @@ class _ProgramasScreenState extends State<ProgramasScreen> {
 
       try {
         await provider.asignarAsignatura(nuevaAsignacion);
+        await provider.loadAsignaturasProgramas();
         _mostrarMensaje('Asignatura asignada exitosamente');
         if (mounted) {
           Navigator.pop(context);
         }
       } catch (e) {
+        print('Error detallado al asignar asignatura: $e');
         _mostrarError('Error al asignar asignatura: $e');
       }
     }
@@ -681,18 +684,49 @@ class _ProgramasScreenState extends State<ProgramasScreen> {
                                   color: Colors.white,
                                 ),
                               ),
-                              title: Text(
-                                asignacion.nombreAsignatura ?? 'Asignatura',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              subtitle: Text(
-                                'Programa: ${asignacion.nombrePrograma ?? 'Programa'}',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondaryColor,
-                                ),
+                              title: Consumer2<AsignaturaProvider, ProgramaProvider>(
+                                builder: (context, asignaturaProvider, programaProvider, child) {
+                                  final asignatura = asignaturaProvider.asignaturas.firstWhere(
+                                    (a) => a.id == asignacion.asignaturaId,
+                                    orElse: () => Asignatura(
+                                      id: 0,
+                                      nombre: 'Asignatura no encontrada',
+                                      codigoAsignatura: 'N/A',
+                                    ),
+                                  );
+                                  final programa = programaProvider.programas.firstWhere(
+                                    (p) => p.id == asignacion.programaId,
+                                    orElse: () => Programa(
+                                      id: 0,
+                                      nombre: 'Programa no encontrado',
+                                      descripcion: '',
+                                      codigoPrograma: 'N/A',
+                                    ),
+                                  );
+
+                                  final asignaturaNombre = asignatura.nombre;
+                                  final programaNombre = programa.nombre;
+
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        asignaturaNombre,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Programa: $programaNombre',
+                                        style: TextStyle(
+                                          color: AppTheme.textSecondaryColor,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
                               ),
                               trailing: IconButton(
                                 icon: const Icon(Icons.delete),
