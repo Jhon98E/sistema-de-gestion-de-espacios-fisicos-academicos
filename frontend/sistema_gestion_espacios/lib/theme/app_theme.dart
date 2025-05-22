@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   // Colores base
-  static const Color primaryColor = Color(0xFF1565C0); // Azul más oscuro
+  static const Color primaryColor = Color(0xFF2F789D); // Nuevo color de la barra de navegación
   static const Color secondaryColor = Color(0xFF1976D2);
   static const Color accentColor = Color(0xFFFF4081);
 
@@ -45,7 +45,7 @@ class AppTheme {
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: secondaryColor,
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -56,12 +56,12 @@ class AppTheme {
 
   // Temas por sección
   static final ThemeData salonesTheme = ThemeData(
-    primaryColor: const Color(0xFF4CAF50), // Verde
+    primaryColor: const Color(0xFF2F789D), // Actualizado al color de la navbar
     colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF4CAF50),
-      primary: const Color(0xFF4CAF50),
+      seedColor: const Color(0xFF2F789D),
+      primary: const Color(0xFF2F789D),
       secondary: const Color(0xFF81C784),
-      tertiary: const Color(0xFF2E7D32),
+      tertiary: const Color(0xFF2F789D),
     ),
     textTheme: const TextTheme(
       bodyLarge: TextStyle(color: textPrimaryColor),
@@ -81,10 +81,10 @@ class AppTheme {
   );
 
   static final ThemeData asignaturasTheme = ThemeData(
-    primaryColor: const Color(0xFF9C27B0), // Púrpura
+    primaryColor: const Color(0xFF2F789D), // Actualizado al color de la navbar
     colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF9C27B0),
-      primary: const Color(0xFF9C27B0),
+      seedColor: const Color(0xFF2F789D),
+      primary: const Color(0xFF2F789D),
       secondary: const Color(0xFFBA68C8),
       tertiary: const Color(0xFF6A1B9A),
     ),

@@ -219,8 +219,18 @@ class _AsignaturasScreenState extends State<AsignaturasScreen> {
       data: AppTheme.asignaturasTheme,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Asignaturas'),
-          backgroundColor: AppTheme.asignaturasTheme.primaryColor,
+          title: const Text(
+            'Asignaturas',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 1.2,
+            ),
+          ),
+          backgroundColor: const Color(0xFF2F789D),
+          elevation: 0,
+          centerTitle: true,
         ),
         body: Consumer<AsignaturaProvider>(
           builder: (context, provider, child) {
@@ -405,7 +415,7 @@ class _AsignaturasScreenState extends State<AsignaturasScreen> {
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () => _mostrarFormulario(),
-          backgroundColor: AppTheme.asignaturasTheme.colorScheme.secondary,
+          backgroundColor: const Color(0xFFBA68C8),
           icon: const Icon(Icons.add),
           label: const Text('Nueva Asignatura'),
         ),

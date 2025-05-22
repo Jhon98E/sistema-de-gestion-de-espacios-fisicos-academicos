@@ -281,210 +281,215 @@ class _SalonesScreenState extends State<SalonesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Theme(
-      data: AppTheme.salonesTheme,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Salones'),
-          backgroundColor: AppTheme.salonesTheme.primaryColor,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Salones',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            letterSpacing: 1.2,
+          ),
         ),
-        body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _salones.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.meeting_room_outlined,
-                          size: 64,
-                          color: AppTheme.salonesTheme.primaryColor.withOpacity(0.5),
+        backgroundColor: const Color(0xFF2F789D),
+        elevation: 0,
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _salones.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.meeting_room_outlined,
+                        size: 64,
+                        color: const Color(0xFF2F789D).withOpacity(0.5),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No hay salones registrados',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: const Color(0xFF2F789D).withOpacity(0.7),
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No hay salones registrados',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: AppTheme.salonesTheme.primaryColor.withOpacity(0.7),
-                          ),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: () => _mostrarFormulario(),
+                        icon: const Icon(Icons.add),
+                        label: const Text('Agregar Salón'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2F789D),
                         ),
-                        const SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          onPressed: () => _mostrarFormulario(),
-                          icon: const Icon(Icons.add),
-                          label: const Text('Agregar Salón'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.salonesTheme.primaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _salones.length,
-                    itemBuilder: (context, index) {
-                      final salon = _salones[index];
-                      return Card(
-                        elevation: 2,
-                        margin: const EdgeInsets.only(bottom: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: StatefulBuilder(
-                            builder: (context, setState) {
-                              bool isHovered = false;
-                              return AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                transform: Matrix4.identity()
-                                  ..translate(0.0, isHovered ? -8.0 : 0.0, 0.0),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _salones.length,
+                  itemBuilder: (context, index) {
+                    final salon = _salones[index];
+                    return Card(
+                      elevation: 2,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: StatefulBuilder(
+                          builder: (context, setState) {
+                            bool isHovered = false;
+                            return AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              transform: Matrix4.identity()
+                                ..translate(0.0, isHovered ? -8.0 : 0.0, 0.0),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: isHovered 
+                                        ? const Color(0xFF2F789D).withOpacity(0.3)
+                                        : Colors.grey.withOpacity(0.1),
+                                    spreadRadius: isHovered ? 2 : 1,
+                                    blurRadius: isHovered ? 12 : 4,
+                                    offset: Offset(0, isHovered ? 4 : 2),
+                                  ),
+                                ],
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
                                   borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: isHovered 
-                                          ? AppTheme.salonesTheme.primaryColor.withOpacity(0.3)
-                                          : Colors.grey.withOpacity(0.1),
-                                      spreadRadius: isHovered ? 2 : 1,
-                                      blurRadius: isHovered ? 12 : 4,
-                                      offset: Offset(0, isHovered ? 4 : 2),
+                                  onTap: () {},
+                                  onHover: (hovered) {
+                                    setState(() {
+                                      isHovered = hovered;
+                                    });
+                                  },
+                                  child: ListTile(
+                                    contentPadding: const EdgeInsets.all(16),
+                                    leading: CircleAvatar(
+                                      backgroundColor: salon.disponibilidad
+                                          ? const Color(0xFF4CAF50)
+                                          : Colors.grey,
+                                      child: Icon(
+                                        _getIconForTipo(salon.tipo),
+                                        color: Colors.white,
+                                      ),
                                     ),
-                                  ],
-                                ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(12),
-                                    onTap: () {},
-                                    onHover: (hovered) {
-                                      setState(() {
-                                        isHovered = hovered;
-                                      });
-                                    },
-                                    child: ListTile(
-                                      contentPadding: const EdgeInsets.all(16),
-                                      leading: CircleAvatar(
-                                        backgroundColor: salon.disponibilidad
-                                            ? AppTheme.salonesTheme.primaryColor
-                                            : Colors.grey,
-                                        child: Icon(
-                                          _getIconForTipo(salon.tipo),
-                                          color: Colors.white,
-                                        ),
+                                    title: Text(
+                                      salon.nombre,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
                                       ),
-                                      title: Text(
-                                        salon.nombre,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      subtitle: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          const SizedBox(height: 8),
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.people,
-                                                size: 16,
+                                    ),
+                                    subtitle: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.people,
+                                              size: 16,
+                                              color: AppTheme.textSecondaryColor,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              'Capacidad: ${salon.capacidad}',
+                                              style: TextStyle(
                                                 color: AppTheme.textSecondaryColor,
                                               ),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                'Capacidad: ${salon.capacidad}',
-                                                style: TextStyle(
-                                                  color: AppTheme.textSecondaryColor,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.category,
-                                                size: 16,
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.category,
+                                              size: 16,
+                                              color: AppTheme.textSecondaryColor,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              'Tipo: ${salon.tipo}',
+                                              style: TextStyle(
                                                 color: AppTheme.textSecondaryColor,
                                               ),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                'Tipo: ${salon.tipo}',
-                                                style: TextStyle(
-                                                  color: AppTheme.textSecondaryColor,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                salon.disponibilidad
-                                                    ? Icons.check_circle
-                                                    : Icons.cancel,
-                                                size: 16,
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              salon.disponibilidad
+                                                  ? Icons.check_circle
+                                                  : Icons.cancel,
+                                              size: 16,
+                                              color: salon.disponibilidad
+                                                  ? Colors.green
+                                                  : Colors.red,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              salon.disponibilidad
+                                                  ? 'Disponible'
+                                                  : 'No disponible',
+                                              style: TextStyle(
                                                 color: salon.disponibilidad
                                                     ? Colors.green
                                                     : Colors.red,
                                               ),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                salon.disponibilidad
-                                                    ? 'Disponible'
-                                                    : 'No disponible',
-                                                style: TextStyle(
-                                                  color: salon.disponibilidad
-                                                      ? Colors.green
-                                                      : Colors.red,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Tooltip(
-                                            message: 'Editar salón',
-                                            child: IconButton(
-                                              icon: const Icon(Icons.edit),
-                                              color: const Color(0xFF2196F3),
-                                              onPressed: () => _mostrarFormulario(salon),
                                             ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Tooltip(
+                                          message: 'Editar salón',
+                                          child: IconButton(
+                                            icon: const Icon(Icons.edit),
+                                            color: const Color(0xFF2196F3),
+                                            onPressed: () => _mostrarFormulario(salon),
                                           ),
-                                          const SizedBox(width: 8),
-                                          Tooltip(
-                                            message: 'Eliminar salón',
-                                            child: IconButton(
-                                              icon: const Icon(Icons.delete),
-                                              color: const Color(0xFFE53935),
-                                              onPressed: () => _eliminarSalon(salon.id!),
-                                            ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Tooltip(
+                                          message: 'Eliminar salón',
+                                          child: IconButton(
+                                            icon: const Icon(Icons.delete),
+                                            color: const Color(0xFFE53935),
+                                            onPressed: () => _eliminarSalon(salon.id!),
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                              );
-                            },
-                          ),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () => _mostrarFormulario(),
-          backgroundColor: AppTheme.salonesTheme.colorScheme.secondary,
-          icon: const Icon(Icons.add),
-          label: const Text('Nuevo Salón'),
-        ),
+                      ),
+                    );
+                  },
+                ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _mostrarFormulario(),
+        backgroundColor: const Color(0xFF81C784),
+        icon: const Icon(Icons.add),
+        label: const Text('Nuevo Salón'),
       ),
     );
   }

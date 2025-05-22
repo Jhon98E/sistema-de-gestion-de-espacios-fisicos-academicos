@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/asignatura_provider.dart';
+import 'providers/programa_provider.dart';
 import 'screens/auth/login_view.dart';
 import 'screens/salones_screen.dart';
 import 'screens/asignaturas_screen.dart';
+import 'screens/programas_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -21,6 +23,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => AsignaturaProvider()),
+        ChangeNotifierProvider(create: (_) => ProgramaProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -60,7 +63,7 @@ class _HomePageState extends State<HomePage> {
 
   final List<Widget> _pages = [
     const SalonesScreen(),
-    const Center(child: Text('Programas')),
+    const ProgramasScreen(),
     const Center(child: Text('Notificaciones')),
     const Center(child: Text('Horarios')),
     const Center(child: Text('Cohortes')),

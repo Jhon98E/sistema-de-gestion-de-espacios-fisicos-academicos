@@ -15,7 +15,7 @@ class Programa {
     return Programa(
       id: json['id'],
       nombre: json['nombre'],
-      descripcion: json['descripcion'] ?? '',
+      descripcion: json['descripcion'],
       codigoPrograma: json['codigo_programa'],
     );
   }
