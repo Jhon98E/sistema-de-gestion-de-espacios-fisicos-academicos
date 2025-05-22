@@ -4,6 +4,10 @@ import '../models/asignatura_programa.dart';
 import '../models/asignatura.dart';
 import '../services/programas_service.dart';
 
+// Importar los modelos Asignatura y Programa completos para acceder a sus nombres
+import '../models/asignatura.dart';
+import '../models/programa.dart';
+
 class ProgramaProvider with ChangeNotifier {
   List<Programa> _programas = [];
   List<AsignaturaPrograma> _asignaturasProgramas = [];
@@ -22,8 +26,11 @@ class ProgramaProvider with ChangeNotifier {
 
     try {
       _programas = await ProgramaService.getProgramas();
+      // Aquí solo cargamos las AsignaturaPrograma sin nombres aún
       _asignaturasProgramas = await ProgramaService.getAsignaturasProgramas();
-      await loadAsignaturasAndProgramasForNames();
+      // La lógica de poblar nombres se hará cuando se necesite, quizás en la UI o en un método específico si se mantiene aquí.
+      // O, modificar loadAsignaturasProgramas para que reciba las listas completas.
+
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -32,57 +39,41 @@ class ProgramaProvider with ChangeNotifier {
     }
   }
 
-  Future<void> loadAsignaturasProgramas() async {
+  // Modificar este método para que reciba las listas completas de asignaturas y programas
+  Future<void> loadAsignaturasProgramas(List<Asignatura> todasAsignaturas, List<Programa> todosProgramas) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
     try {
-      _asignaturasProgramas = await ProgramaService.getAsignaturasProgramas();
-      await loadAsignaturasAndProgramasForNames();
+      final fetchedAsignaturasProgramas = await ProgramaService.getAsignaturasProgramas();
+
+      // Ahora, enriquecer cada AsignaturaPrograma con los nombres
+      _asignaturasProgramas = fetchedAsignaturasProgramas.map((ap) {
+        final asignatura = todasAsignaturas.firstWhere(
+          (a) => a.id == ap.asignaturaId,
+          orElse: () => Asignatura(id: ap.asignaturaId, nombre: 'Desconocida', codigoAsignatura: ''), // Fallback
+        );
+        final programa = todosProgramas.firstWhere(
+          (p) => p.id == ap.programaId,
+          orElse: () => Programa(id: ap.programaId, nombre: 'Desconocido', descripcion: '', codigoPrograma: ''), // Fallback
+        );
+        
+        // Crear una nueva instancia con los nombres poblados
+        return AsignaturaPrograma(
+          id: ap.id,
+          asignaturaId: ap.asignaturaId,
+          programaId: ap.programaId,
+          nombreAsignatura: asignatura.nombre,
+          nombrePrograma: programa.nombre,
+        );
+      }).toList();
+
     } catch (e) {
       _error = e.toString();
       print('Error loading asignaturas programas: $_error');
     } finally {
       _isLoading = false;
       notifyListeners();
-    }
-  }
-
-  Future<void> loadAsignaturasAndProgramasForNames() async {
-    try {
-      // ** IMPORTANTE: Esta parte requiere acceso a AsignaturaProvider y ProgramaProvider **
-      // Como no tengo acceso directo aquí, esta lógica es conceptual.
-      // Deberías asegurarte de que AsignaturaProvider y ProgramaProvider
-      // estén cargados antes de llamar a este método y acceder a sus listas.
-
-      // Ejemplo conceptual:
-      // final asignaturaProvider = ... get AsignaturaProvider ...;
-      // final programaProvider = ... get ProgramaProvider ...;
-      // final todasAsignaturas = asignaturaProvider.asignaturas;
-      // final todosProgramas = programaProvider.programas;
-
-      // Para este ejemplo, modificaré AsignaturaPrograma para incluir los nombres si están disponibles
-      // basándome en la estructura actual, asumiendo que los nombres vienen del backend
-      // en la respuesta inicial o que se pueden obtener de las listas completas cargadas previamente.
-      // Si los nombres *no* vienen del backend en la respuesta de getAsignaturasProgramas,
-      // la lógica para obtenerlos y asignarlos a cada objeto AsignaturaPrograma sería más compleja.
-
-      // Revertimos a la lógica original ya que parece que los nombres deberían venir con AsignaturaPrograma
-      // y el problema es que el backend no los está enviando o el mapeo es incorrecto.
-      // La modificación anterior asume que necesitas cargar las listas completas para obtener los nombres,
-      // lo cual sería ineficiente si el endpoint ya debería incluirlos.
-
-      // Vamos a asumir que el endpoint getAsignaturasProgramas() *debería* retornar 'nombre_asignatura' y 'nombre_programa'.
-      // El problema puede ser en la deserialización o en la respuesta del backend.
-      // Revertiré los cambios en loadProgramas/loadAsignaturasProgramas a su estado original
-      // y me centraré en asegurar que el modelo AsignaturaPrograma maneje correctamente los campos.
-
-      // Código original para loadAsignaturasProgramas (mantener como estaba):
-      // _asignaturasProgramas = await ProgramaService.getAsignaturasProgramas();
-
-    } catch (e) {
-      // Manejar error si la carga de asignaturas/programas falla aquí también
-      print('Error getting names for AsignaturaPrograma: $e');
     }
   }
 

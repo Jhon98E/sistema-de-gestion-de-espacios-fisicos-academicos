@@ -59,14 +59,23 @@ class _HorariosScreenState extends State<HorariosScreen> with SingleTickerProvid
     _selectedDay = _focusedDay;
     _tabController = TabController(length: 2, vsync: this);
     
-    Future.microtask(() {
-      Provider.of<HorarioProvider>(context, listen: false).loadHorarios();
-      Provider.of<HorarioProvider>(context, listen: false).loadAsignaturasProgramasCohortes();
-      Provider.of<HorarioProvider>(context, listen: false).loadAsignaturasProgramasCohortesDetalles();
-      Provider.of<ProgramaProvider>(context, listen: false).loadProgramas();
-      Provider.of<AsignaturaProvider>(context, listen: false).loadAsignaturas();
-      Provider.of<CohorteProvider>(context, listen: false).loadCohortes();
-      Provider.of<SalonProvider>(context, listen: false).loadSalones();
+    Future.microtask(() async {
+      final horarioProvider = Provider.of<HorarioProvider>(context, listen: false);
+      final programaProvider = Provider.of<ProgramaProvider>(context, listen: false);
+      final asignaturaProvider = Provider.of<AsignaturaProvider>(context, listen: false);
+      final cohorteProvider = Provider.of<CohorteProvider>(context, listen: false);
+      final salonProvider = Provider.of<SalonProvider>(context, listen: false);
+
+      await horarioProvider.loadHorarios();
+      await programaProvider.loadProgramas();
+      await asignaturaProvider.loadAsignaturas();
+      await cohorteProvider.loadCohortes();
+      await salonProvider.loadSalones();
+
+      await programaProvider.loadAsignaturasProgramas(asignaturaProvider.asignaturas, programaProvider.programas);
+
+      await horarioProvider.loadAsignaturasProgramasCohortes();
+      await horarioProvider.loadAsignaturasProgramasCohortesDetalles();
     });
   }
 
@@ -237,11 +246,25 @@ class _HorariosScreenState extends State<HorariosScreen> with SingleTickerProvid
     );
   }
 
-  void _mostrarFormularioAsignaturaProgramaCohorte() {
+  void _mostrarFormularioAsignaturaProgramaCohorte([AsignaturaProgramaCohorte? asignacion]) {
+    _asignaturaProgramaId = null;
+    _salonId = null;
+    _horarioId = null;
+    _fechaInicioController.clear();
+    _fechaFinController.clear();
+
+    if (asignacion != null) {
+      _asignaturaProgramaId = asignacion.asignaturaProgramaId;
+      _salonId = asignacion.salonId;
+      _horarioId = asignacion.horarioId;
+      _fechaInicioController.text = asignacion.fechaInicio;
+      _fechaFinController.text = asignacion.fechaFin;
+    }
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Nueva Asignación'),
+        title: Text(asignacion == null ? 'Nueva Asignación' : 'Editar Asignación'),
         content: SingleChildScrollView(
           child: Form(
             key: _asignaturaProgramaCohorteFormKey,
@@ -429,7 +452,10 @@ class _HorariosScreenState extends State<HorariosScreen> with SingleTickerProvid
   Future<void> _guardarAsignaturaProgramaCohorte() async {
     if (_asignaturaProgramaCohorteFormKey.currentState?.validate() ?? false) {
       final provider = Provider.of<HorarioProvider>(context, listen: false);
+
+      final int? asignacionId = null;
       final nuevaAsignacion = AsignaturaProgramaCohorte(
+        id: asignacionId,
         asignaturaProgramaId: _asignaturaProgramaId!,
         salonId: _salonId!,
         horarioId: _horarioId!,
@@ -438,8 +464,13 @@ class _HorariosScreenState extends State<HorariosScreen> with SingleTickerProvid
       );
 
       try {
-        await provider.createAsignaturaProgramaCohorte(nuevaAsignacion);
-        _mostrarMensaje('Asignación creada exitosamente');
+        if (asignacionId != null) {
+          _mostrarMensaje('Asignación actualizada exitosamente');
+        } else {
+          await provider.createAsignaturaProgramaCohorte(nuevaAsignacion);
+          _mostrarMensaje('Asignación creada exitosamente');
+        }
+        
         if (mounted) {
           Navigator.pop(context);
         }
@@ -839,10 +870,20 @@ class _HorariosScreenState extends State<HorariosScreen> with SingleTickerProvid
                                         ),
                                       ],
                                     ),
-                                    trailing: IconButton(
-                                      icon: const Icon(Icons.delete),
-                                      onPressed: () => _eliminarAsignaturaProgramaCohorte(asignacion.id!),
-                                      color: AppTheme.accentColor,
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.edit),
+                                          onPressed: () => _mostrarFormularioAsignaturaProgramaCohorte(asignacion),
+                                          color: AppTheme.primaryColor,
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete),
+                                          onPressed: () => _eliminarAsignaturaProgramaCohorte(asignacion.id!),
+                                          color: AppTheme.accentColor,
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 );

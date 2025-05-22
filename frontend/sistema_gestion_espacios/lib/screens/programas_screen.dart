@@ -27,9 +27,15 @@ class _ProgramasScreenState extends State<ProgramasScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      Provider.of<ProgramaProvider>(context, listen: false).loadProgramas();
-      Provider.of<AsignaturaProvider>(context, listen: false).loadAsignaturas();
+    Future.microtask(() async {
+      final programaProvider = Provider.of<ProgramaProvider>(context, listen: false);
+      final asignaturaProvider = Provider.of<AsignaturaProvider>(context, listen: false);
+
+      await programaProvider.loadProgramas();
+      await asignaturaProvider.loadAsignaturas();
+
+      // Cargar asignaturas programas pasando las listas completas
+      await programaProvider.loadAsignaturasProgramas(asignaturaProvider.asignaturas, programaProvider.programas);
     });
   }
 
@@ -336,7 +342,14 @@ class _ProgramasScreenState extends State<ProgramasScreen> {
 
       try {
         await provider.asignarAsignatura(nuevaAsignacion);
-        await provider.loadAsignaturasProgramas();
+        
+        // Obtener los providers para pasar las listas completas
+        final asignaturaProvider = Provider.of<AsignaturaProvider>(context, listen: false);
+        final programaProvider = Provider.of<ProgramaProvider>(context, listen: false);
+        
+        // Recargar asignaturas programas pasando las listas
+        await provider.loadAsignaturasProgramas(asignaturaProvider.asignaturas, programaProvider.programas);
+        
         _mostrarMensaje('Asignatura asignada exitosamente');
         if (mounted) {
           Navigator.pop(context);
