@@ -69,11 +69,9 @@ jobs:
       uses: actions/checkout@v4
     
     - name: Instalar kubectl
-      run: |
-        KUBECTL_VERSION=$(curl -s https://dl.k8s.io/release/stable.txt)
-        curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
-        chmod +x kubectl
-        sudo mv kubectl /usr/local/bin/
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'latest'
     
     - name: Configurar credenciales de Kubernetes
       run: |
