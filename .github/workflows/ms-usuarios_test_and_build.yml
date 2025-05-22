@@ -64,6 +64,7 @@ jobs:
   desplegar_a_kubernetes:
     needs: ms-usuarios_test_and_build
     runs-on: ubuntu-latest
+    if: false  # Deshabilitado temporalmente para testing
     steps:
     - name: Checkout repo
       uses: actions/checkout@v4
