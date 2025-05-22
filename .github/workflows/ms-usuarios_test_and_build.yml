@@ -77,6 +77,9 @@ jobs:
       run: |
         mkdir -p $HOME/.kube
         echo "${{ secrets.KUBECONFIG_DATA }}" | base64 -d > $HOME/.kube/config
+        # Verificar que el kubeconfig sea válido
+        kubectl config view --minify
+        kubectl cluster-info
     
     - name: Actualizar imagen en deployment
       run: |
