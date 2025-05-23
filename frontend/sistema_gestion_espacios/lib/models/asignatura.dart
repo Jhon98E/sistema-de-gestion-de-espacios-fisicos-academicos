@@ -11,7 +11,7 @@ class Asignatura {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      'id': id ?? 0,
       'nombre': nombre,
       'codigo_asignatura': codigoAsignatura,
     };
