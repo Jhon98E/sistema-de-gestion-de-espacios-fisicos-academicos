@@ -17,16 +17,19 @@ class Usuario {
     required this.password,
   });
 
-  Map<String, dynamic> toJson() {
-    return {
+  Map<String, dynamic> toJson({bool includePassword = true}) {
+    final data = {
       'id': id,
       'nombre': nombre,
       'apellido': apellido,
       'codigo_usuario': codigoUsuario,
       'rol': rol,
       'email': email,
-      'password': password,
     };
+    if (includePassword && password.isNotEmpty) {
+      data['password'] = password;
+    }
+    return data;
   }
 
   factory Usuario.fromJson(Map<String, dynamic> json) {
