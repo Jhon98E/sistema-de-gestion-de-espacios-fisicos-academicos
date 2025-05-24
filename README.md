@@ -1,77 +1,78 @@
-# Sistema de Gestión de Espacios Físicos Académicos
-## Microservicio de Usuarios
+# 🏫 Sistema de Gestión de Espacios Físicos Académicos  
+Forma parte de una arquitectura de microservicios desplegada en **Kubernetes**, con imágenes almacenadas en **DockerHub** y desarrollos locales facilitados por **Telepresence**.
 
-Este microservicio gestiona la autenticación y administración de usuarios. Se ejecuta en un entorno Docker con una base de datos PostgreSQL.
+---
 
-## 📌 Requisitos
-Antes de comenzar, asegúrate de tener instalado e iniciar Docker:
-- [Docker](https://www.docker.com/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
+## 📌 Requisitos Previos
 
-## 🚀 Instalación y Configuración
+Antes de continuar, asegúrate de tener:
+
+- ✅ [kubectl](https://kubernetes.io/docs/tasks/tools/)
+- ✅ Acceso a un clúster de Kubernetes (local o remoto)
+- ✅ [Docker](https://www.docker.com/) (para desarrollo local)
+- ✅ [Telepresence](https://telepresence.io/docs/install/client) (para debug/desarrollo local)
+- ✅ Helm (para instalación de servicios comunes)
+
+---
+
+## 🚀 Instalación y Despliegue
 
 ### 1️⃣ Clonar el repositorio
-```sh
-  git clone https://github.com/Jhon98E/sistema-de-gestion-de-espacios-fisicos-academicos.git
-  cd microservicio-usuarios #O el microservicio que desee construir 
+📁 Clona el proyecto en una ruta corta, como:
+C:\sistema-de-gestion-de-espacios-fisicos-academicos
+Esto evita errores por rutas demasiado largas en Windows.
+
+```bash
+git clone https://github.com/Jhon98E/sistema-de-gestion-de-espacios-fisicos-academicos.git
 ```
 
-### 2️⃣ Configurar el puerto del microservicio
-Cada microservicio debe ejecutarse en un puerto distinto para evitar conflictos. Por ejemplo:
-- **Microservicio de Usuarios** → `8000`
-- **Microservicio de Programas** → `8001`
-- **Microservicio de Reservas** → `8002`
+2️⃣ Despliegue en Kubernetes
+Cada microservicio se construye automáticamente a través de CI/CD y su imagen es publicada en DockerHub. El archivo deployment.yaml de Kubernetes usa esta imagen directamente.
 
-Abre el archivo `docker-compose.yml` y edita la sección del servicio para asegurarte de que el puerto asignado sea único.
-
-Ejemplo de configuración para el microservicio de usuarios:
-```yaml
-services:
-  ms-usuarios:
-    build: .
+🌐 Paso a paso:
+Revisar/editar deployment.yaml:
+Asegúrate de que el campo image tenga la imagen correspondiente:
+```bash
+containers:
+  - name: ms-usuarios
+    image: docker.io/tuusuario/ms-usuarios:latest
     ports:
-      - "8000:8000"
+      - containerPort: 8000
+Aplicar el deployment:
 ```
-Para otro microservicio, cambia el puerto `8000` por `8001`, `8002`, etc.
+Una vez confirmada la conexión al clúster, aplica los manifiestos de Kubernetes para cada microservicio. Asegúrate de estar dentro del directorio correspondiente a cada uno (microservicio-usuarios, microservicio-programas, etc.).
+```bash
 
-### 3️⃣ Construir y levantar los contenedores
-Ejecuta el siguiente comando para iniciar el microservicio y la base de datos:
-```sh
-docker-compose up -d --build
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
 ```
-Esto iniciará:
-- 📦 **PostgreSQL** en el puerto `5432`
-- ⚙ **Microservicio de usuarios** en el puerto `8000` (o el asignado)
+Verificar los pods y servicios:
 
-### 4️⃣ Verificar que los contenedores están corriendo
-```sh
-docker ps
+```bash
+kubectl get pods
+kubectl get svc
 ```
-Deberías ver algo similar a esto:
+---
+📝 Instrucciones para correr el frontend Flutter en Windows
+🚨 Recomendación importante
+
+Para evitar errores de longitud de ruta en Windows, clona el proyecto en una carpeta directamente en C:\ (por ejemplo: C:\mi_app_frontend).
+
+📦 Requisitos previos
+
+Antes de continuar, asegúrate de tener:
+
+Flutter instalado (https://docs.flutter.dev/get-started/install)
+
+Soporte para Windows Desktop activado:
+flutter config --enable-windows-desktop
+
+
+```bash
+cd ruta\al\proyecto\frontend
+cd C:\mi_app_frontend
+
+flutter clean
+flutter run -d windows
 ```
-CONTAINER ID   IMAGE             PORTS                    NAMES
-123abc456def   microservicio-usuarios   0.0.0.0:8000->8000/tcp   ms-usuarios
-789xyz012ghi   postgres:15-alpine   0.0.0.0:5432->5432/tcp   postgres_db
-```
-
-## 🔍 Acceder al Microservicio
-- **API:** `http://localhost:8000`
-- **Documentación (si usas FastAPI):** `http://localhost:8000/docs`
-
-## 🛠️ Comandos Útiles
-
-### Detener los contenedores
-```sh
-docker-compose down
-```
-
-### Ver logs del microservicio
-```sh
-docker-compose logs -f ms-usuarios
-```
-
-### Ingresar a la base de datos PostgreSQL
-```sh
-docker exec -it postgres_db psql -U postgres -d usuarios
-```
-
+✅ Si todo está configurado correctamente, Flutter compilará y abrirá la aplicación como una app de escritorio de Windows.

@@ -25,7 +25,8 @@ async def consultar_por_codigo(codigo_usuario: str, db: Session = Depends(get_db
 
 @usuario_router.post("/crear-usuario", response_model=Usuario, status_code=201)
 async def crear_usuario(usuario: Usuario, db: Session = Depends(get_db)):
-    return usuario_controller.crear_usuario(usuario, db)
+    """Crear nuevo usuario y enviar notificación de bienvenida"""
+    return await usuario_controller.crear_usuario(usuario, db)
 
 @usuario_router.put("/actualizar-usuario/{id}", response_model=Usuario)
 async def actualizar_usuario(id: int, usuario: Usuario, db: Session = Depends(get_db), usuario_actual = Depends(consultar_usuario_actual)):

@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-main
+    environment:
+      POSTGRES_DB: asignacion_espacios
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - app_network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-main
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - app_network
+
+  microservicio-usuarios:
+    build: ./microservicio-usuarios
+    container_name: ms-usuarios
+    environment:
+      - DATABASE_URL=postgresql://postgres:root@postgres:5432/asignacion_espacios
+      - NOTIFICACIONES_SERVICE_URL=http://ms-notificaciones:8006
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app_network
+
+  microservicio-notificaciones:
+    build: ./microservicio-notificaciones
+    container_name: ms-notificaciones
+    environment:
+      - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672/
+      - SMTP_USUARIO=${SMTP_USUARIO}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - EMAIL_REMITENTE=${EMAIL_REMITENTE}
+    ports:
+      - "8006:8006"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app_network
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+
+networks:
+  app_network:
+    driver: bridge

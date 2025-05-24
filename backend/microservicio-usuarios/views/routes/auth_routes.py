@@ -1,11 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
+from pydantic import BaseModel, EmailStr
 from controllers.repositories.database import get_db
 from controllers import auth_controller
 from controllers.services.auth.manejador_auth import consultar_usuario_actual, oauth2_scheme
 
 auth_router = APIRouter(prefix="/auth", tags=["Autenticación"])
+
+class SolicitudRecuperacion(BaseModel):
+    email: EmailStr
+
+class RestablecerPassword(BaseModel):
+    token: str
+    nueva_password: str
 
 @auth_router.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
@@ -16,7 +24,6 @@ async def logout(token: str = Depends(oauth2_scheme), usuario_actual = Depends(c
     """
     Endpoint para cerrar sesión del usuario.
     En una implementación básica, simplemente confirmamos que el token es válido.
-    Para una implementación más robusta, podrías mantener una blacklist de tokens.
     """
     return {"message": "Sesión cerrada exitosamente", "usuario": usuario_actual.codigo_usuario}
 
@@ -44,3 +51,18 @@ async def validate_token(token: str = Depends(oauth2_scheme), db: Session = Depe
             detail="Token inválido",
             headers={"WWW-Authenticate": "Bearer"}
         )
+
+@auth_router.post("/solicitar-recuperacion")
+async def solicitar_recuperacion(solicitud: SolicitudRecuperacion, db: Session = Depends(get_db)):
+    """
+    Endpoint para solicitar recuperación de contraseña.
+    Envía un email con el token de recuperación.
+    """
+    return await auth_controller.solicitar_recuperacion_password(solicitud.email, db)
+
+@auth_router.post("/restablecer-password")
+async def restablecer_password(datos: RestablecerPassword, db: Session = Depends(get_db)):
+    """
+    Endpoint para restablecer contraseña usando el token de recuperación.
+    """
+    return auth_controller.restablecer_password(datos.token, datos.nueva_password, db)

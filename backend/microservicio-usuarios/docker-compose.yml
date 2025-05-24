@@ -1,39 +1,43 @@
-version: '3'
+version: '3.8'
 
 services:
-  db:
-    image: postgres:15-alpine
-    container_name: postgres_db
+  postgres:
+    image: postgres:15
+    container_name: postgres-usuarios
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=root
-      - POSTGRES_DB=asignacion_espacios
+      POSTGRES_DB: asignacion_espacios
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
     ports:
-      - "5432:5432"
+      - "5433:5432"  # Puerto diferente para evitar conflictos
     volumes:
-      - db_data:/var/lib/postgresql/data
-    networks:
-      - red_compartida
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
+    networks:
+      - red_compartida
 
-  microservicio:
-    image: jhonenriquez98/ms-usuarios:latest
-    depends_on:
-      db:
-        condition: service_healthy
+  microservicio-usuarios:
+    build: .
+    container_name: ms-usuarios
     environment:
-      - DATABASE_URL=postgresql://postgres:root@db:5432/asignacion_espacios
+      - DATABASE_URL=postgresql://postgres:root@postgres:5432/asignacion_espacios
+      - NOTIFICACIONES_SERVICE_URL=http://ms-notificaciones:8006/notificaciones
     ports:
       - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
     networks:
       - red_compartida
 
 volumes:
-  db_data:
+  postgres_data:
 
 networks:
   red_compartida:
