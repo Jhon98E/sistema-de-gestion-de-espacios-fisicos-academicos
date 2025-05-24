@@ -30,7 +30,7 @@ class Cohorte {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      'id': id ?? 0,
       'nombre': nombre,
       'programa_id': programaId,
       'fecha_inicio': fechaInicio,

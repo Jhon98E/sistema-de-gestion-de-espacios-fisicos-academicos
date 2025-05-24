@@ -40,15 +40,19 @@ class CohorteService {
 
   // Crear una nueva cohorte
   static Future<Cohorte> createCohorte(Cohorte cohorte) async {
+    final jsonBody = cohorte.toJson();
+    print('DEBUG - JSON enviado a backend: ' + jsonBody.toString());
     final response = await http.post(
       Uri.parse('$baseUrl/cohortes/crear_cohorte'),
       headers: {'Content-Type': 'application/json'},
-      body: json.encode(cohorte.toJson()),
+      body: json.encode(jsonBody),
     );
+    print('DEBUG - Código de estado respuesta: ' + response.statusCode.toString());
+    print('DEBUG - Body respuesta: ' + response.body);
     if (response.statusCode == 201) { // Assuming 201 for creation success
       return Cohorte.fromJson(json.decode(response.body));
     }
-    throw Exception('Error al crear cohorte');
+    throw Exception('Error al crear cohorte: Código ${response.statusCode} - ${response.body}');
   }
 
   // Actualizar una cohorte
