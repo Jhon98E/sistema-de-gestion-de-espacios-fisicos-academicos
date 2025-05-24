@@ -1,7 +1,6 @@
 import httpx
 import os
 import logging
-from typing import Dict, Any
 
 class NotificacionService:
     def __init__(self):
