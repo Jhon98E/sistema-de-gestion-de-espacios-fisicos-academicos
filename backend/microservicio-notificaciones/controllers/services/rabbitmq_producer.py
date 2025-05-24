@@ -1,31 +1,36 @@
-import pika
+import aio_pika
 import json
+import os
+import logging
+from typing import Dict, Any
 
-
-RABBITMQ_HOST = "localhost"
-QUEUE_NAME = "cola_notificaciones"
-
-def enviar_mensaje(notificacion):
+async def enviar_mensaje_rabbitmq(mensaje: Dict[str, Any]):
+    """Enviar mensaje a RabbitMQ"""
     try:
-        conexion = pika.BlockingConnection(pika.ConnectionParameters(RABBITMQ_HOST))
-        canal = conexion.channel()
-
-        canal.queue_declare(queue=QUEUE_NAME)
-
-        mensaje = json.dumps(notificacion)  
-        canal.basic_publish(exchange="", routing_key=QUEUE_NAME, body=mensaje)
-
-        conexion.close()
-        return {"mensaje": "Notificación encolada"}
+        rabbitmq_url = os.getenv("RABBITMQ_URL", "amqp://guest:guest@rabbitmq:5672/")
+        
+        connection = await aio_pika.connect_robust(rabbitmq_url)
+        
+        async with connection:
+            channel = await connection.channel()
+            
+            # Declarar cola de notificaciones
+            queue = await channel.declare_queue(
+                "notificaciones_email", 
+                durable=True
+            )
+            
+            # Publicar mensaje
+            await channel.default_exchange.publish(
+                aio_pika.Message(
+                    json.dumps(mensaje).encode(),
+                    delivery_mode=aio_pika.DeliveryMode.PERSISTENT
+                ),
+                routing_key="notificaciones_email"
+            )
+            
+        logging.info("✅ Mensaje enviado a RabbitMQ")
+        
     except Exception as e:
-        return {"error": str(e)}
-
-# Esto es solo para probarlo directamente:
-if __name__ == "__main__":
-    notificacion = {
-        "destinatario": "jhon.enriquez@correounivalle.edu.co",
-        "asunto": "Cambio de horario 📅",
-        "cuerpo": "Su clase fue reprogramada con exito... 📢"
-    }
-    print(enviar_mensaje(notificacion))
-    print("📤 Mensaje encolado correctamente")
+        logging.error(f"❌ Error al enviar mensaje a RabbitMQ: {e}")
+        raise

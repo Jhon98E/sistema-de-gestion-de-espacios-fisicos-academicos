@@ -1,33 +1,83 @@
-# services/notificacion_service.py
+from models.notificacion import (
+    Notificacion, 
+    NotificacionRegistroUsuario,
+    NotificacionRecuperacionPassword,
+    NotificacionHorario,
+    TipoNotificacion,
+    EstadoNotificacion
+)
+from datetime import datetime
+from config.templates import TEMPLATES_EMAIL
 
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-
-def enviar_correo(notificacion):
-    remitente = "rmolinomolina@gmail.com"
-    destinatario = notificacion["destinatario"]
-    asunto = notificacion["asunto"] 
-    cuerpo = notificacion["cuerpo"]
-
-    smtp_server = "smtp.gmail.com"
-    smtp_port = 587
-    smtp_usuario = "rmolinomolina@gmail.com"
-    smtp_password = "pqiz npbd fwec joie"  # Usa una contraseña de aplicación
-
-    try:
-        mensaje = MIMEMultipart()
-        mensaje["From"] = remitente
-        mensaje["To"] = destinatario
-        mensaje["Subject"] = asunto
-        mensaje.attach(MIMEText(cuerpo, "plain"))
-
-        servidor = smtplib.SMTP(smtp_server, smtp_port)
-        servidor.starttls()
-        servidor.login(smtp_usuario, smtp_password)
-        servidor.sendmail(remitente, destinatario, mensaje.as_string())
-        servidor.quit()
-
-        print("✅ Correo enviado")
-    except Exception as e:
-        print(f"❌ Error al enviar correo: {e}")
+class NotificacionService:
+    
+    def crear_notificacion_registro(self, datos: NotificacionRegistroUsuario) -> Notificacion:
+        """Crear notificación para registro de usuario"""
+        asunto = "¡Bienvenido al Sistema de Gestión de Espacios!"
+        mensaje = TEMPLATES_EMAIL["registro_usuario"].format(
+            nombre_completo=datos.nombre_completo,
+            codigo_usuario=datos.codigo_usuario
+        )
+        
+        return Notificacion(
+            destinatario=datos.email,
+            asunto=asunto,
+            mensaje=mensaje,
+            tipo=TipoNotificacion.REGISTRO_USUARIO,
+            estado=EstadoNotificacion.PENDIENTE,
+            fecha_creacion=datetime.now().isoformat(),
+            datos_adicionales={
+                "nombre_completo": datos.nombre_completo,
+                "codigo_usuario": datos.codigo_usuario
+            }
+        )
+    
+    def crear_notificacion_recuperacion(self, datos: NotificacionRecuperacionPassword) -> Notificacion:
+        """Crear notificación para recuperación de contraseña"""
+        asunto = "Recuperación de Contraseña - Sistema de Gestión de Espacios"
+        mensaje = TEMPLATES_EMAIL["recuperacion_password"].format(
+            nombre_completo=datos.nombre_completo,
+            token_recuperacion=datos.token_recuperacion
+        )
+        
+        return Notificacion(
+            destinatario=datos.email,
+            asunto=asunto,
+            mensaje=mensaje,
+            tipo=TipoNotificacion.RECUPERACION_PASSWORD,
+            estado=EstadoNotificacion.PENDIENTE,
+            fecha_creacion=datetime.now().isoformat(),
+            datos_adicionales={
+                "nombre_completo": datos.nombre_completo,
+                "token_recuperacion": datos.token_recuperacion
+            }
+        )
+    
+    def crear_notificacion_horario(self, datos: NotificacionHorario) -> Notificacion:
+        """Crear notificación para cambios en horarios"""
+        tipo_map = {
+            "creado": TipoNotificacion.HORARIO_CREADO,
+            "actualizado": TipoNotificacion.HORARIO_ACTUALIZADO,
+            "eliminado": TipoNotificacion.HORARIO_ELIMINADO
+        }
+        
+        asunto = f"Horario {datos.accion} - Sistema de Gestión de Espacios"
+        mensaje = TEMPLATES_EMAIL["horario"].format(
+            nombre_completo=datos.nombre_completo,
+            accion=datos.accion,
+            detalles=str(datos.detalles_horario)
+        )
+        
+        return Notificacion(
+            destinatario=datos.email,
+            asunto=asunto,
+            mensaje=mensaje,
+            tipo=tipo_map.get(datos.accion, TipoNotificacion.HORARIO_ACTUALIZADO),
+            estado=EstadoNotificacion.PENDIENTE,
+            fecha_creacion=datetime.now().isoformat(),
+            datos_adicionales={
+                "nombre_completo": datos.nombre_completo,
+                "accion": datos.accion,
+                "detalles_horario": datos.detalles_horario
+            }
+        )

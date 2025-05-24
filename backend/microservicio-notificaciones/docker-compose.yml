@@ -1,8 +1,46 @@
 version: '3'
+
 services:
   rabbitmq:
-    image: "rabbitmq:management"
-    container_name: "rabbitmq"
+    image: rabbitmq:3-management
     ports:
       - "5672:5672"
       - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    networks:
+      - red_compartida
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  microservicio-notificaciones:
+    build:
+      context: ./microservicio-notificaciones
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://postgres:root@postgres:5432/asignacion_espacios
+      - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672/
+      - SMTP_USUARIO=tu_correo@gmail.com
+      - SMTP_PASSWORD=tu_password
+      - EMAIL_REMITENTE=tu_correo@gmail.com
+    ports:
+      - "8006:8006"
+    networks:
+      - red_compartida
+
+volumes:
+  rabbitmq_data:
+
+networks:
+  red_compartida:
+    name: red_compartida
+    driver: bridge
+    external: true
