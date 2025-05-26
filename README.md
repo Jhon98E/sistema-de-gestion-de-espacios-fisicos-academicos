@@ -1,6 +1,6 @@
 # 🏫 Sistema de Gestión de Espacios Físicos Académicos  
 Forma parte de una arquitectura de microservicios desplegada en **Kubernetes**, con imágenes almacenadas en **DockerHub** y desarrollos locales facilitados por **Telepresence**.
-
+<a href="https://deepwiki.com/Jhon98E/sistema-de-gestion-de-espacios-fisicos-academicos"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 ---
 
 ## 📌 Requisitos Previos
