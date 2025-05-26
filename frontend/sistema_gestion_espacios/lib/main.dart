@@ -251,8 +251,7 @@ class _HomePageState extends State<HomePage> {
                                 width: 40,
                                 child: PopupMenuButton<String>(
                                   color: Colors.white,
-                                  icon: const Icon(Icons.keyboard_arrow_down,
-                                      color: Colors.white),
+                                  icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
                                   onSelected: _onMenuSelected,
                                   itemBuilder: (context) => [
                                     const PopupMenuItem(

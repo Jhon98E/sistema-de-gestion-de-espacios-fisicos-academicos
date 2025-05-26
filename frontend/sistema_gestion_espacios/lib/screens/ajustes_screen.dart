@@ -222,9 +222,9 @@ class _AjustesScreenState extends State<AjustesScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
-                    Text('Otras configuraciones', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text('Otras configuraciones jijiji', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     SizedBox(height: 12),
-                    Text('Aquí podrás agregar más opciones de configuración en el futuro.'),
+                    Text('Aquí  vamos a agregar más opciones de configuración en el futuro.'),
                   ],
                 ),
               ),
