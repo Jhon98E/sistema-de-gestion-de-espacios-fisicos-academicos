@@ -6,6 +6,7 @@ import '../models/asignatura_programa_cohorte_detalle.dart';
 
 class HorariosService {
   static const String _baseUrl = 'http://ms-horarios:8005/';
+  static const String _programasUrl = 'http://ms-programas:8001/';
   
   static Map<String, String> get _headers => {
     'Content-Type': 'application/json',
@@ -144,41 +145,80 @@ class HorariosService {
     }
   }
 
-  static Future<AsignaturaProgramaCohorteDetalle> createAsignaturaProgramaCohorteDetalle(AsignaturaProgramaCohorteDetalle detalle) async {
-    final response = await http.post(
-      Uri.parse('${_baseUrl}asignaturas_programas_cohortes_detalles'),
+  static Future<List<Map<String, dynamic>>> getAsignaturasProgramas() async {
+    final response = await http.get(
+      Uri.parse('${_programasUrl}programas/asignaturas_programas/'),
       headers: _headers,
-      body: json.encode(detalle.toJson()),
     );
 
     if (response.statusCode == 200) {
-      return AsignaturaProgramaCohorteDetalle.fromJson(json.decode(response.body));
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((json) => json as Map<String, dynamic>).toList();
+    } else {
+      throw Exception('Error al cargar las asignaturas-programas: ${response.statusCode}');
+    }
+  }
+
+  static Future<Map<String, dynamic>> createAsignaturaPrograma(int asignaturaId, int programaId) async {
+    final response = await http.post(
+      Uri.parse('${_baseUrl}programas/asignar_asignatura'),
+      headers: _headers,
+      body: json.encode({
+        'asignatura_id': asignaturaId,
+        'programa_id': programaId,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Error al crear la asignación asignatura-programa');
+    }
+  }
+
+  static Future<AsignaturaProgramaCohorteDetalle> createAsignaturaProgramaCohorteDetalle(AsignaturaProgramaCohorteDetalle detalle) async {
+    print('DEBUG detalle.asignaturaProgramaCohorteId: ${detalle.asignaturaProgramaCohorteId}');
+    print('DEBUG detalle.cohorteId: ${detalle.cohorteId}');
+    final url = Uri.parse('${_baseUrl}asignaturas_programas_cohortes_detalles')
+        .replace(queryParameters: {
+          'asignatura_programa_cohorte_id': detalle.asignaturaProgramaCohorteId.toString(),
+          'cohorte_id': detalle.cohorteId.toString(),
+        });
+    final response = await http.post(
+      url,
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      return detalle;
     } else {
       throw Exception('Error al crear el detalle de asignatura-programa-cohorte');
     }
   }
 
-  static Future<AsignaturaProgramaCohorteDetalle> getAsignaturaProgramaCohorteDetalleById(int id) async {
+  static Future<List<Map<String, dynamic>>> getProgramas() async {
     final response = await http.get(
-      Uri.parse('${_baseUrl}asignaturas_programas_cohortes_detalles/$id'),
+      Uri.parse('${_programasUrl}programas/'),
       headers: _headers,
     );
-
     if (response.statusCode == 200) {
-      return AsignaturaProgramaCohorteDetalle.fromJson(json.decode(response.body));
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((json) => json as Map<String, dynamic>).toList();
     } else {
-      throw Exception('Error al cargar el detalle de asignatura-programa-cohorte');
+      throw Exception('Error al cargar los programas: \\${response.statusCode}');
     }
   }
 
-  static Future<void> deleteAsignaturaProgramaCohorteDetalle(int id) async {
-    final response = await http.delete(
-      Uri.parse('${_baseUrl}asignaturas_programas_cohortes_detalles/$id'),
+  static Future<List<Map<String, dynamic>>> getAsignaturas() async {
+    final response = await http.get(
+      Uri.parse('http://ms-asignaturas:8002/asignatura/'),
       headers: _headers,
     );
-
-    if (response.statusCode != 200) {
-      throw Exception('Error al eliminar el detalle de asignatura-programa-cohorte');
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((json) => json as Map<String, dynamic>).toList();
+    } else {
+      throw Exception('Error al cargar las asignaturas: \\${response.statusCode}');
     }
   }
 } 

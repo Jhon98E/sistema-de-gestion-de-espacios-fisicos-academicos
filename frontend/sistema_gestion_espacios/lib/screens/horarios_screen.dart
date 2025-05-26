@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:table_calendar/table_calendar.dart';
 import '../providers/horario_provider.dart';
 import '../providers/programa_provider.dart';
 import '../providers/asignatura_provider.dart';
@@ -26,10 +25,8 @@ class _HorariosScreenState extends State<HorariosScreen> with SingleTickerProvid
   final _horaFinController = TextEditingController();
   final _jornadaController = TextEditingController();
   int? _horarioEditandoId;
-  DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay;
-  CalendarFormat _calendarFormat = CalendarFormat.week;
   late TabController _tabController;
+  bool _isLoading = true;
 
   // Controllers para asignaturas-programas-cohortes
   final _asignaturaProgramaCohorteFormKey = GlobalKey<FormState>();
@@ -51,13 +48,16 @@ class _HorariosScreenState extends State<HorariosScreen> with SingleTickerProvid
 
   final List<String> _jornadas = ['diurno', 'nocturno'];
 
+  final List<Map<String, String>> _intervalos = [
+    {'label': '8 am – 12 m', 'inicio': '08:00:00', 'fin': '12:00:00'},
+    {'label': '12 pm – 6 pm', 'inicio': '12:00:00', 'fin': '18:00:00'},
+    {'label': '6 pm–10 pm', 'inicio': '18:00:00', 'fin': '22:00:00'},
+  ];
+
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
-    _focusedDay = DateTime(now.year, now.month, now.day);
-    _selectedDay = _focusedDay;
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: _diasSemana.length, vsync: this);
     
     Future.microtask(() async {
       final horarioProvider = Provider.of<HorarioProvider>(context, listen: false);
@@ -66,16 +66,39 @@ class _HorariosScreenState extends State<HorariosScreen> with SingleTickerProvid
       final cohorteProvider = Provider.of<CohorteProvider>(context, listen: false);
       final salonProvider = Provider.of<SalonProvider>(context, listen: false);
 
-      await horarioProvider.loadHorarios();
-      await programaProvider.loadProgramas();
-      await asignaturaProvider.loadAsignaturas();
-      await cohorteProvider.loadCohortes();
-      await salonProvider.loadSalones();
+      try {
+        await horarioProvider.loadHorarios();
+        await programaProvider.loadProgramas();
+        await asignaturaProvider.loadAsignaturas();
+        await cohorteProvider.loadCohortes();
+        await salonProvider.loadSalones();
 
-      await programaProvider.loadAsignaturasProgramas(asignaturaProvider.asignaturas, programaProvider.programas);
+        await programaProvider.loadAsignaturasProgramas(asignaturaProvider.asignaturas, programaProvider.programas);
+        await horarioProvider.loadAsignaturasProgramasCohortes();
+        
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error al cargar datos: $e')),
+          );
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
+    });
 
-      await horarioProvider.loadAsignaturasProgramasCohortes();
-      await horarioProvider.loadAsignaturasProgramasCohortesDetalles();
+    _fechaInicioController.text = DateTime.now().toIso8601String().split('T')[0];
+    _fechaFinController.text = DateTime.now().add(const Duration(days: 180)).toIso8601String().split('T')[0];
+    
+    // Cargar asignaturas-programas existentes después de que el widget esté construido
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _cargarAsignaturasProgramas();
     });
   }
 
@@ -246,181 +269,6 @@ class _HorariosScreenState extends State<HorariosScreen> with SingleTickerProvid
     );
   }
 
-  void _mostrarFormularioAsignaturaProgramaCohorte([AsignaturaProgramaCohorte? asignacion]) {
-    _asignaturaProgramaId = null;
-    _salonId = null;
-    _horarioId = null;
-    _fechaInicioController.clear();
-    _fechaFinController.clear();
-
-    if (asignacion != null) {
-      _asignaturaProgramaId = asignacion.asignaturaProgramaId;
-      _salonId = asignacion.salonId;
-      _horarioId = asignacion.horarioId;
-      _fechaInicioController.text = asignacion.fechaInicio;
-      _fechaFinController.text = asignacion.fechaFin;
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(asignacion == null ? 'Nueva Asignación' : 'Editar Asignación'),
-        content: SingleChildScrollView(
-          child: Form(
-            key: _asignaturaProgramaCohorteFormKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Consumer<ProgramaProvider>(
-                  builder: (context, programaProvider, child) {
-                    if (programaProvider.isLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (programaProvider.error != null) {
-                       return Center(child: Text('Error al cargar asignaturas-programas: ${programaProvider.error}'));
-                    }
-                    return DropdownButtonFormField<int>(
-                      value: _asignaturaProgramaId,
-                      decoration: InputDecoration(
-                        labelText: 'Asignatura-Programa',
-                        prefixIcon: const Icon(Icons.book),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey[50],
-                      ),
-                      items: programaProvider.asignaturasProgramas.map((ap) {
-                        return DropdownMenuItem(
-                          value: ap.id,
-                          child: Text('${ap.nombreAsignatura} - ${ap.nombrePrograma}'),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() => _asignaturaProgramaId = value);
-                      },
-                      validator: (value) =>
-                          value == null ? 'Seleccione una asignatura-programa' : null,
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
-                Consumer<SalonProvider>(
-                  builder: (context, salonProvider, child) {
-                    if (salonProvider.isLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                     if (salonProvider.error != null) {
-                       return Center(child: Text('Error al cargar salones: ${salonProvider.error}'));
-                    }
-                    return DropdownButtonFormField<int>(
-                      value: _salonId,
-                      decoration: InputDecoration(
-                        labelText: 'Salón',
-                        prefixIcon: const Icon(Icons.meeting_room),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey[50],
-                      ),
-                      items: salonProvider.salones.map((salon) {
-                        return DropdownMenuItem(
-                          value: salon.id,
-                          child: Text(salon.nombre),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() => _salonId = value);
-                      },
-                      validator: (value) =>
-                          value == null ? 'Seleccione un salón' : null,
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
-                Consumer<HorarioProvider>(
-                  builder: (context, horarioProvider, child) {
-                    return DropdownButtonFormField<int>(
-                      value: _horarioId,
-                      decoration: InputDecoration(
-                        labelText: 'Horario',
-                        prefixIcon: const Icon(Icons.schedule),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey[50],
-                      ),
-                      items: horarioProvider.horarios.map((horario) {
-                        return DropdownMenuItem(
-                          value: horario.id,
-                          child: Text('${horario.diaSemana} ${horario.horaInicio}-${horario.horaFin}'),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() => _horarioId = value);
-                      },
-                      validator: (value) =>
-                          value == null ? 'Seleccione un horario' : null,
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _fechaInicioController,
-                  decoration: InputDecoration(
-                    labelText: 'Fecha Inicio',
-                    prefixIcon: const Icon(Icons.calendar_today),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey[50],
-                  ),
-                  readOnly: true,
-                  onTap: () => _selectDate(_fechaInicioController),
-                  validator: (value) =>
-                      value?.isEmpty ?? true ? 'Campo requerido' : null,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _fechaFinController,
-                  decoration: InputDecoration(
-                    labelText: 'Fecha Fin',
-                    prefixIcon: const Icon(Icons.calendar_today),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey[50],
-                  ),
-                  readOnly: true,
-                  onTap: () => _selectDate(_fechaFinController),
-                  validator: (value) =>
-                      value?.isEmpty ?? true ? 'Campo requerido' : null,
-                ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: _guardarAsignaturaProgramaCohorte,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
-            ),
-            child: const Text('Guardar'),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _guardarHorario() async {
     if (_formKey.currentState?.validate() ?? false) {
       final provider = Provider.of<HorarioProvider>(context, listen: false);
@@ -449,99 +297,6 @@ class _HorariosScreenState extends State<HorariosScreen> with SingleTickerProvid
     }
   }
 
-  Future<void> _guardarAsignaturaProgramaCohorte() async {
-    if (_asignaturaProgramaCohorteFormKey.currentState?.validate() ?? false) {
-      final provider = Provider.of<HorarioProvider>(context, listen: false);
-
-      final int? asignacionId = null;
-      final nuevaAsignacion = AsignaturaProgramaCohorte(
-        id: asignacionId,
-        asignaturaProgramaId: _asignaturaProgramaId!,
-        salonId: _salonId!,
-        horarioId: _horarioId!,
-        fechaInicio: _fechaInicioController.text,
-        fechaFin: _fechaFinController.text,
-      );
-
-      try {
-        if (asignacionId != null) {
-          _mostrarMensaje('Asignación actualizada exitosamente');
-        } else {
-          await provider.createAsignaturaProgramaCohorte(nuevaAsignacion);
-          _mostrarMensaje('Asignación creada exitosamente');
-        }
-        
-        if (mounted) {
-          Navigator.pop(context);
-        }
-      } catch (e) {
-        _mostrarError('Error al guardar asignación: $e');
-      }
-    }
-  }
-
-  Future<void> _eliminarHorario(int id) async {
-    final confirmacion = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirmar eliminación'),
-        content: const Text('¿Está seguro de eliminar este horario?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentColor),
-            child: const Text('Eliminar'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmacion ?? false) {
-      try {
-        await Provider.of<HorarioProvider>(context, listen: false)
-            .deleteHorario(id);
-        _mostrarMensaje('Horario eliminado exitosamente');
-      } catch (e) {
-        _mostrarError('Error al eliminar horario: $e');
-      }
-    }
-  }
-
-  Future<void> _eliminarAsignaturaProgramaCohorte(int id) async {
-    final confirmacion = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirmar eliminación'),
-        content: const Text('¿Está seguro de eliminar esta asignación?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentColor),
-            child: const Text('Eliminar'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmacion ?? false) {
-      try {
-        await Provider.of<HorarioProvider>(context, listen: false)
-            .deleteAsignaturaProgramaCohorte(id);
-        _mostrarMensaje('Asignación eliminada exitosamente');
-      } catch (e) {
-        _mostrarError('Error al eliminar asignación: $e');
-      }
-    }
-  }
-
   void _mostrarError(String mensaje) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -560,354 +315,401 @@ class _HorariosScreenState extends State<HorariosScreen> with SingleTickerProvid
     );
   }
 
+  Future<void> _cargarAsignaturasProgramas() async {
+    if (!mounted) return;
+    
+    try {
+      await Provider.of<HorarioProvider>(context, listen: false).loadAsignaturasProgramas();
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al cargar asignaturas-programas: $e')),
+        );
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final firstDayOfYear = DateTime(now.year, 1, 1);
-    final lastDayFiveYearsLater = DateTime(now.year + 5, 12, 31);
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Horarios',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            letterSpacing: 1.2,
-          ),
-        ),
-        backgroundColor: AppTheme.primaryColor,
-        elevation: 0,
-        centerTitle: true,
+        title: const Text('Horarios', style: TextStyle(fontWeight: FontWeight.bold)),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'Horarios'),
-            Tab(text: 'Asignaciones'),
-          ],
+          isScrollable: true,
+          tabs: _diasSemana.map((d) => Tab(text: d)).toList(),
         ),
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          // Tab de Horarios
-          Consumer<HorarioProvider>(
-            builder: (context, provider, child) {
-              if (provider.isLoading) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-
-              if (provider.error != null) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Error: ${provider.error}',
-                        style: const TextStyle(color: Color(0xFF2F789D)),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () => provider.loadHorarios(),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2F789D),
-                        ),
-                        child: const Text('Reintentar'),
-                      ),
-                    ],
+        children: _diasSemana.map((dia) {
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: _intervalos.map((intervalo) {
+                return Expanded(
+                  child: IntervaloColumn(
+                    dia: dia,
+                    intervalo: intervalo,
                   ),
                 );
-              }
-
-              return SafeArea(
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      child: TableCalendar(
-                        firstDay: firstDayOfYear,
-                        lastDay: lastDayFiveYearsLater,
-                        focusedDay: _focusedDay,
-                        calendarFormat: _calendarFormat,
-                        selectedDayPredicate: (day) {
-                          return isSameDay(_selectedDay, day);
-                        },
-                        onDaySelected: (selectedDay, focusedDay) {
-                          setState(() {
-                            _selectedDay = selectedDay;
-                            _focusedDay = focusedDay;
-                          });
-                        },
-                        onFormatChanged: (format) {
-                          setState(() {
-                            _calendarFormat = format;
-                          });
-                        },
-                        onPageChanged: (focusedDay) {
-                          setState(() {
-                            _focusedDay = focusedDay;
-                          });
-                        },
-                        calendarStyle: const CalendarStyle(
-                          selectedDecoration: BoxDecoration(
-                            color: Color(0xFF2F789D),
-                            shape: BoxShape.circle,
-                          ),
-                          todayDecoration: BoxDecoration(
-                            color: Color(0xFF2F789D),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        availableCalendarFormats: const {
-                          CalendarFormat.month: 'Mes',
-                          CalendarFormat.week: 'Semana',
-                        },
-                      ),
-                    ),
-                    Expanded(
-                      child: provider.horarios.isEmpty
-                          ? const Center(
-                              child: Text(
-                                'No hay horarios registrados',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            )
-                          : ListView.builder(
-                              padding: const EdgeInsets.all(16),
-                              itemCount: provider.horarios.length,
-                              itemBuilder: (context, index) {
-                                final horario = provider.horarios[index];
-                                return Card(
-                                  elevation: 2,
-                                  margin: const EdgeInsets.only(bottom: 16),
-                                  child: ListTile(
-                                    title: Text(
-                                      horario.diaSemana,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                    subtitle: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        const SizedBox(height: 8),
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              Icons.access_time,
-                                              size: 16,
-                                              color: AppTheme.textSecondaryColor,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              'Inicio: ${horario.horaInicio}',
-                                              style: TextStyle(
-                                                color: AppTheme.textSecondaryColor,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 16),
-                                            Icon(
-                                              Icons.access_time,
-                                              size: 16,
-                                              color: AppTheme.textSecondaryColor,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              'Fin: ${horario.horaFin}',
-                                              style: TextStyle(
-                                                color: AppTheme.textSecondaryColor,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              Icons.schedule,
-                                              size: 16,
-                                              color: AppTheme.textSecondaryColor,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              'Jornada: ${horario.jornada.toUpperCase()}',
-                                              style: TextStyle(
-                                                color: AppTheme.textSecondaryColor,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        IconButton(
-                                          icon: const Icon(Icons.edit),
-                                          onPressed: () => _mostrarFormularioHorario(horario),
-                                          color: AppTheme.primaryColor,
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.delete),
-                                          onPressed: () => _eliminarHorario(horario.id!),
-                                          color: AppTheme.accentColor,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-          // Tab de Asignaciones
-          Consumer<HorarioProvider>(
-            builder: (context, provider, child) {
-              if (provider.isLoading) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-
-              if (provider.error != null) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Error: ${provider.error}',
-                        style: const TextStyle(color: Color(0xFF2F789D)),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          provider.loadAsignaturasProgramasCohortes();
-                          provider.loadAsignaturasProgramasCohortesDetalles();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2F789D),
-                        ),
-                        child: const Text('Reintentar'),
-                      ),
-                    ],
-                  ),
-                );
-              }
-
-              return SafeArea(
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: provider.asignaturasProgramasCohortes.isEmpty
-                          ? const Center(
-                              child: Text(
-                                'No hay asignaciones registradas',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            )
-                          : ListView.builder(
-                              padding: const EdgeInsets.all(16),
-                              itemCount: provider.asignaturasProgramasCohortes.length,
-                              itemBuilder: (context, index) {
-                                final asignacion = provider.asignaturasProgramasCohortes[index];
-                                return Card(
-                                  elevation: 2,
-                                  margin: const EdgeInsets.only(bottom: 16),
-                                  child: ListTile(
-                                    title: Text(
-                                      'Asignación #${asignacion.id}',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                    subtitle: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        const SizedBox(height: 8),
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              Icons.calendar_today,
-                                              size: 16,
-                                              color: AppTheme.textSecondaryColor,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              'Inicio: ${asignacion.fechaInicio}',
-                                              style: TextStyle(
-                                                color: AppTheme.textSecondaryColor,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 16),
-                                            Icon(
-                                              Icons.calendar_today,
-                                              size: 16,
-                                              color: AppTheme.textSecondaryColor,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              'Fin: ${asignacion.fechaFin}',
-                                              style: TextStyle(
-                                                color: AppTheme.textSecondaryColor,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        IconButton(
-                                          icon: const Icon(Icons.edit),
-                                          onPressed: () => _mostrarFormularioAsignaturaProgramaCohorte(asignacion),
-                                          color: AppTheme.primaryColor,
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.delete),
-                                          onPressed: () => _eliminarAsignaturaProgramaCohorte(asignacion.id!),
-                                          color: AppTheme.accentColor,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
+              }).toList(),
+            ),
+          );
+        }).toList(),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (_tabController.index == 0) {
-            _mostrarFormularioHorario();
-          } else {
-            _mostrarFormularioAsignaturaProgramaCohorte();
-          }
-        },
+        onPressed: () => _mostrarFormularioHorario(),
         backgroundColor: AppTheme.primaryColor,
         child: const Icon(Icons.add),
       ),
+    );
+  }
+}
+
+class IntervaloColumn extends StatelessWidget {
+  final String dia;
+  final Map<String, String> intervalo;
+  const IntervaloColumn({required this.dia, required this.intervalo});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<HorarioProvider>(
+      builder: (context, provider, child) {
+        // Buscar los horarios que coincidan con el día y el intervalo
+        final horarios = provider.horarios.where((h) => 
+          h.diaSemana == dia && 
+          h.horaInicio == intervalo['inicio'] && 
+          h.horaFin == intervalo['fin']
+        ).toList();
+
+        // Buscar las asignaciones para estos horarios
+        final asignaciones = provider.asignaturasProgramasCohortes.where((a) => 
+          horarios.any((h) => h.id == a.horarioId)
+        ).toList();
+
+        final salones = Provider.of<SalonProvider>(context, listen: false).salones;
+
+        return Column(
+          children: [
+            Text(intervalo['label']!, style: const TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            ...asignaciones.map((a) {
+              final salon = salones.firstWhere(
+                (s) => s.id == a.salonId,
+                orElse: () => Salon(id: 0, nombre: 'Desconocido', capacidad: 0, tipo: '', disponibilidad: false)
+              );
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    minimumSize: const Size(double.infinity, 40),
+                  ),
+                  onPressed: () {},
+                  child: Text(salon.nombre, style: const TextStyle(color: Colors.white)),
+                ),
+              );
+            }),
+            if (asignaciones.isEmpty)
+              OutlinedButton(
+                onPressed: () => showDialog(
+                  context: context,
+                  builder: (_) => ModalAsignarSalon(
+                    dia: dia,
+                    intervalo: intervalo,
+                  ),
+                ),
+                child: const Icon(Icons.add),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class ModalAsignarSalon extends StatefulWidget {
+  final String dia;
+  final Map<String, String> intervalo;
+  const ModalAsignarSalon({required this.dia, required this.intervalo});
+
+  @override
+  State<ModalAsignarSalon> createState() => _ModalAsignarSalonState();
+}
+
+class _ModalAsignarSalonState extends State<ModalAsignarSalon> {
+  final _formKey = GlobalKey<FormState>();
+  int? asignaturaProgramaId;
+  List<int> cohortesSeleccionadas = [];
+  int? salonId;
+  final _fechaInicioController = TextEditingController();
+  final _fechaFinController = TextEditingController();
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fechaInicioController.text = DateTime.now().toIso8601String().split('T')[0];
+    _fechaFinController.text = DateTime.now().add(const Duration(days: 180)).toIso8601String().split('T')[0];
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _cargarAsignaturasProgramas();
+    });
+  }
+
+  Future<void> _cargarAsignaturasProgramas() async {
+    if (!mounted) return;
+    try {
+      await Provider.of<HorarioProvider>(context, listen: false).loadAsignaturasProgramas();
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al cargar asignaturas-programas: $e')),
+        );
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _fechaInicioController.dispose();
+    _fechaFinController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _selectDate(TextEditingController controller) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null) {
+      controller.text = picked.toIso8601String().split('T')[0];
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final horarioProvider = Provider.of<HorarioProvider>(context);
+    final cohorteProvider = Provider.of<CohorteProvider>(context, listen: false);
+    final salonProvider = Provider.of<SalonProvider>(context, listen: false);
+
+    return AlertDialog(
+      title: const Text('Asignar Materia y Grupos'),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_isLoading)
+                const Center(child: CircularProgressIndicator())
+              else if (horarioProvider.asignaturasProgramas.isEmpty)
+                const Text('No hay asignaturas-programas disponibles')
+              else
+                DropdownButtonFormField<int>(
+                  value: asignaturaProgramaId,
+                  decoration: const InputDecoration(
+                    labelText: 'Asignatura-Programa',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: horarioProvider.asignaturasProgramas.map((ap) => 
+                    DropdownMenuItem(
+                      value: ap['id'] as int,
+                      child: Text('${ap['asignatura_nombre']} - ${ap['programa_nombre']}')
+                    )
+                  ).toList(),
+                  onChanged: (v) => setState(() => asignaturaProgramaId = v),
+                  validator: (value) => value == null ? 'Seleccione una asignatura-programa' : null,
+                ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<int>(
+                value: salonId,
+                decoration: const InputDecoration(
+                  labelText: 'Salón',
+                  border: OutlineInputBorder(),
+                ),
+                items: salonProvider.salones.map((s) => 
+                  DropdownMenuItem(value: s.id, child: Text(s.nombre))
+                ).toList(),
+                onChanged: (v) => setState(() => salonId = v),
+                validator: (value) => value == null ? 'Seleccione un salón' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _fechaInicioController,
+                decoration: InputDecoration(
+                  labelText: 'Fecha de Inicio',
+                  border: const OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.calendar_today),
+                    onPressed: () => _selectDate(_fechaInicioController),
+                  ),
+                ),
+                readOnly: true,
+                validator: (value) => value?.isEmpty ?? true ? 'Seleccione una fecha de inicio' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _fechaFinController,
+                decoration: InputDecoration(
+                  labelText: 'Fecha de Fin',
+                  border: const OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.calendar_today),
+                    onPressed: () => _selectDate(_fechaFinController),
+                  ),
+                ),
+                readOnly: true,
+                validator: (value) => value?.isEmpty ?? true ? 'Seleccione una fecha de fin' : null,
+              ),
+              const SizedBox(height: 12),
+              const Text('Seleccione los grupos (cohortes):'),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: cohorteProvider.cohortes.map((cohorte) {
+                  final isSelected = cohortesSeleccionadas.contains(cohorte.id);
+                  return FilterChip(
+                    label: Text(cohorte.nombre),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      setState(() {
+                        if (selected) {
+                          cohortesSeleccionadas.add(cohorte.id!);
+                        } else {
+                          cohortesSeleccionadas.remove(cohorte.id!);
+                        }
+                      });
+                    },
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          onPressed: _isLoading ? null : () async {
+            if (_formKey.currentState?.validate() ?? false) {
+              if (cohortesSeleccionadas.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Seleccione al menos un grupo')),
+                );
+                return;
+              }
+
+              try {
+                // 1. Crear el horario
+                final horario = await horarioProvider.createHorario(Horario(
+                  id: null,
+                  diaSemana: widget.dia,
+                  horaInicio: widget.intervalo['inicio']!,
+                  horaFin: widget.intervalo['fin']!,
+                  jornada: 'diurno'
+                ));
+
+                // 2. Crear la asignación de asignatura-programa-cohorte
+                print('Asignación a guardar:');
+                print({
+                  "asignatura_programa_id": asignaturaProgramaId,
+                  "salon_id": salonId,
+                  "horario_id": horario.id,
+                  "fecha_inicio": _fechaInicioController.text,
+                  "fecha_fin": _fechaFinController.text,
+                });
+                var asignacion = await horarioProvider.createAsignaturaProgramaCohorte(
+                  AsignaturaProgramaCohorte(
+                    id: null,
+                    asignaturaProgramaId: asignaturaProgramaId!,
+                    salonId: salonId!,
+                    horarioId: horario.id!,
+                    fechaInicio: _fechaInicioController.text,
+                    fechaFin: _fechaFinController.text,
+                  )
+                );
+                print('Asignación creada: ${asignacion.id}');
+
+                // Si el id es null, buscar la asignación más reciente por los datos enviados
+                if (asignacion.id == null) {
+                  print('El id de la asignación es null, intentando buscar la asignación creada...');
+                  await horarioProvider.loadAsignaturasProgramasCohortes();
+                  final asignacionBuscada = horarioProvider.asignaturasProgramasCohortes.lastWhere(
+                    (a) => a.asignaturaProgramaId == asignaturaProgramaId &&
+                          a.salonId == salonId &&
+                          a.horarioId == horario.id &&
+                          a.fechaInicio == _fechaInicioController.text &&
+                          a.fechaFin == _fechaFinController.text,
+                    orElse: () => AsignaturaProgramaCohorte(
+                      id: null,
+                      asignaturaProgramaId: asignaturaProgramaId!,
+                      salonId: salonId!,
+                      horarioId: horario.id!,
+                      fechaInicio: _fechaInicioController.text,
+                      fechaFin: _fechaFinController.text,
+                    ),
+                  );
+                  asignacion = asignacionBuscada;
+                  print('Asignación encontrada: ${asignacion.id}');
+                }
+
+                // 3. Crear los detalles para cada cohorte seleccionada
+                for (int i = 0; i < cohortesSeleccionadas.length; i++) {
+                  final cohorteId = cohortesSeleccionadas[i];
+                  print('Guardando detalle $i: asignatura_programa_cohorte_id=${asignacion.id}, cohorte_id=$cohorteId');
+                  try {
+                    await horarioProvider.createAsignaturaProgramaCohorteDetalle(
+                      AsignaturaProgramaCohorteDetalle(
+                        id: null,
+                        asignaturaProgramaCohorteId: asignacion.id!,
+                        cohorteId: cohorteId,
+                      )
+                    );
+                    print('Detalle $i guardado correctamente');
+                  } catch (e) {
+                    print('Error guardando detalle $i: $e');
+                  }
+                }
+
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Asignación creada exitosamente')),
+                  );
+                }
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: $e')),
+                );
+              }
+            }
+          },
+          child: const Text('Guardar'),
+        ),
+      ],
     );
   }
 } 
