@@ -310,7 +310,7 @@ class _HorariosScreenState extends State<HorariosScreen> with SingleTickerProvid
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mensaje),
-        backgroundColor: AppTheme.secondaryColor,
+        backgroundColor: Colors.green,
       ),
     );
   }
@@ -342,10 +342,34 @@ class _HorariosScreenState extends State<HorariosScreen> with SingleTickerProvid
     return Scaffold(
       appBar: AppBar(
         title: const Text('Horarios', style: TextStyle(fontWeight: FontWeight.bold)),
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          tabs: _diasSemana.map((d) => Tab(text: d)).toList(),
+        backgroundColor: const Color(0xFF2B7A99),
+        centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Container(
+            alignment: Alignment.center,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  constraints: const BoxConstraints(maxWidth: 700),
+                  child: TabBar(
+                    controller: _tabController,
+                    isScrollable: true,
+                    indicator: BoxDecoration(
+                      color: Color(0xFF2B7A99), // Azul oscuro para la activa
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    labelColor: Colors.white,
+                    unselectedLabelColor: Colors.black87, // Negro para las inactivas
+                    labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 15),
+                    tabs: _diasSemana.map((d) => Tab(text: d)).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
       body: TabBarView(
@@ -383,6 +407,15 @@ class IntervaloColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<Color> coloresAsignaciones = [
+      Colors.green,
+      Colors.blue,
+      Colors.orange,
+      Colors.purple,
+      Colors.teal,
+      Colors.red,
+      Colors.brown,
+    ];
     return Consumer<HorarioProvider>(
       builder: (context, provider, child) {
         // Buscar los horarios que coincidan con el día y el intervalo
@@ -403,20 +436,29 @@ class IntervaloColumn extends StatelessWidget {
           children: [
             Text(intervalo['label']!, style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            ...asignaciones.map((a) {
+            ...asignaciones.asMap().entries.map((entry) {
+              final idx = entry.key;
+              final a = entry.value;
               final salon = salones.firstWhere(
                 (s) => s.id == a.salonId,
                 orElse: () => Salon(id: 0, nombre: 'Desconocido', capacidad: 0, tipo: '', disponibilidad: false)
               );
+              final color = coloresAsignaciones[idx % coloresAsignaciones.length];
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4.0),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: color,
                     minimumSize: const Size(double.infinity, 40),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
-                  onPressed: () {},
-                  child: Text(salon.nombre, style: const TextStyle(color: Colors.white)),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) => InfoAsignacionModal(asignacion: a, salon: salon),
+                    );
+                  },
+                  child: Text(salon.nombre, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               );
             }),
@@ -431,9 +473,52 @@ class IntervaloColumn extends StatelessWidget {
                 ),
                 child: const Icon(Icons.add),
               ),
+            if (asignaciones.isNotEmpty)
+              OutlinedButton(
+                onPressed: () => showDialog(
+                  context: context,
+                  builder: (_) => ModalAsignarSalon(
+                    dia: dia,
+                    intervalo: intervalo,
+                  ),
+                ),
+                child: const Icon(Icons.add),
+              ),
           ],
         );
       },
+    );
+  }
+}
+
+class InfoAsignacionModal extends StatelessWidget {
+  final AsignaturaProgramaCohorte asignacion;
+  final Salon salon;
+  const InfoAsignacionModal({required this.asignacion, required this.salon});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Detalle de Asignación', style: TextStyle(fontWeight: FontWeight.bold)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Salón: ${salon.nombre}', style: const TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Text('Fecha inicio: ${asignacion.fechaInicio}'),
+          Text('Fecha fin: ${asignacion.fechaFin}'),
+          const SizedBox(height: 8),
+          Text('ID Asignatura-Programa: ${asignacion.asignaturaProgramaId}'),
+          Text('ID Horario: ${asignacion.horarioId}'),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cerrar'),
+        ),
+      ],
     );
   }
 }
@@ -508,9 +593,22 @@ class _ModalAsignarSalonState extends State<ModalAsignarSalon> {
 
   @override
   Widget build(BuildContext context) {
-    final horarioProvider = Provider.of<HorarioProvider>(context);
+    final horarioProvider = Provider.of<HorarioProvider>(context, listen: false);
     final cohorteProvider = Provider.of<CohorteProvider>(context, listen: false);
     final salonProvider = Provider.of<SalonProvider>(context, listen: false);
+
+    // Filtrar salones disponibles para este horario
+    final asignacionesExistentes = horarioProvider.asignaturasProgramasCohortes.where((a) =>
+      // Buscar asignaciones en el mismo día, intervalo y fechas
+      horarioProvider.horarios.any((h) =>
+        h.id == a.horarioId &&
+        h.diaSemana == widget.dia &&
+        h.horaInicio == widget.intervalo['inicio'] &&
+        h.horaFin == widget.intervalo['fin']
+      )
+    ).toList();
+    final salonesOcupados = asignacionesExistentes.map((a) => a.salonId).toSet();
+    final salonesDisponibles = salonProvider.salones.where((s) => !salonesOcupados.contains(s.id)).toList();
 
     return AlertDialog(
       title: const Text('Asignar Materia y Grupos'),
@@ -521,10 +619,8 @@ class _ModalAsignarSalonState extends State<ModalAsignarSalon> {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (_isLoading)
-                const Center(child: CircularProgressIndicator())
-              else if (horarioProvider.asignaturasProgramas.isEmpty)
-                const Text('No hay asignaturas-programas disponibles')
-              else
+                const CircularProgressIndicator(),
+              if (!_isLoading) ...[
                 DropdownButtonFormField<int>(
                   value: asignaturaProgramaId,
                   decoration: const InputDecoration(
@@ -540,69 +636,72 @@ class _ModalAsignarSalonState extends State<ModalAsignarSalon> {
                   onChanged: (v) => setState(() => asignaturaProgramaId = v),
                   validator: (value) => value == null ? 'Seleccione una asignatura-programa' : null,
                 ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<int>(
-                value: salonId,
-                decoration: const InputDecoration(
-                  labelText: 'Salón',
-                  border: OutlineInputBorder(),
-                ),
-                items: salonProvider.salones.map((s) => 
-                  DropdownMenuItem(value: s.id, child: Text(s.nombre))
-                ).toList(),
-                onChanged: (v) => setState(() => salonId = v),
-                validator: (value) => value == null ? 'Seleccione un salón' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _fechaInicioController,
-                decoration: InputDecoration(
-                  labelText: 'Fecha de Inicio',
-                  border: const OutlineInputBorder(),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.calendar_today),
-                    onPressed: () => _selectDate(_fechaInicioController),
+                const SizedBox(height: 12),
+                salonesDisponibles.isEmpty
+                  ? const Text('No hay salones disponibles para este horario', style: TextStyle(color: Colors.red))
+                  : DropdownButtonFormField<int>(
+                      value: salonId,
+                      decoration: const InputDecoration(
+                        labelText: 'Salón',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: salonesDisponibles.map((s) => 
+                        DropdownMenuItem(value: s.id, child: Text(s.nombre))
+                      ).toList(),
+                      onChanged: (v) => setState(() => salonId = v),
+                      validator: (value) => value == null ? 'Seleccione un salón' : null,
+                    ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _fechaInicioController,
+                  decoration: InputDecoration(
+                    labelText: 'Fecha de Inicio',
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.calendar_today),
+                      onPressed: () => _selectDate(_fechaInicioController),
+                    ),
                   ),
+                  readOnly: true,
+                  validator: (value) => value?.isEmpty ?? true ? 'Seleccione una fecha de inicio' : null,
                 ),
-                readOnly: true,
-                validator: (value) => value?.isEmpty ?? true ? 'Seleccione una fecha de inicio' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _fechaFinController,
-                decoration: InputDecoration(
-                  labelText: 'Fecha de Fin',
-                  border: const OutlineInputBorder(),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.calendar_today),
-                    onPressed: () => _selectDate(_fechaFinController),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _fechaFinController,
+                  decoration: InputDecoration(
+                    labelText: 'Fecha de Fin',
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.calendar_today),
+                      onPressed: () => _selectDate(_fechaFinController),
+                    ),
                   ),
+                  readOnly: true,
+                  validator: (value) => value?.isEmpty ?? true ? 'Seleccione una fecha de fin' : null,
                 ),
-                readOnly: true,
-                validator: (value) => value?.isEmpty ?? true ? 'Seleccione una fecha de fin' : null,
-              ),
-              const SizedBox(height: 12),
-              const Text('Seleccione los grupos (cohortes):'),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                children: cohorteProvider.cohortes.map((cohorte) {
-                  final isSelected = cohortesSeleccionadas.contains(cohorte.id);
-                  return FilterChip(
-                    label: Text(cohorte.nombre),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      setState(() {
-                        if (selected) {
-                          cohortesSeleccionadas.add(cohorte.id!);
-                        } else {
-                          cohortesSeleccionadas.remove(cohorte.id!);
-                        }
-                      });
-                    },
-                  );
-                }).toList(),
-              ),
+                const SizedBox(height: 12),
+                const Text('Seleccione los grupos (cohortes):'),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: cohorteProvider.cohortes.map((cohorte) {
+                    final isSelected = cohortesSeleccionadas.contains(cohorte.id);
+                    return FilterChip(
+                      label: Text(cohorte.nombre),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        setState(() {
+                          if (selected) {
+                            cohortesSeleccionadas.add(cohorte.id!);
+                          } else {
+                            cohortesSeleccionadas.remove(cohorte.id!);
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+              ],
             ],
           ),
         ),
@@ -623,14 +722,34 @@ class _ModalAsignarSalonState extends State<ModalAsignarSalon> {
               }
 
               try {
-                // 1. Crear el horario
-                final horario = await horarioProvider.createHorario(Horario(
-                  id: null,
-                  diaSemana: widget.dia,
-                  horaInicio: widget.intervalo['inicio']!,
-                  horaFin: widget.intervalo['fin']!,
-                  jornada: 'diurno'
-                ));
+                // 1. Buscar si ya existe el horario
+                Horario? horarioExistente;
+                try {
+                  horarioExistente = horarioProvider.horarios.firstWhere(
+                    (h) =>
+                      h.diaSemana == widget.dia &&
+                      h.horaInicio == widget.intervalo['inicio'] &&
+                      h.horaFin == widget.intervalo['fin'] &&
+                      h.jornada == 'diurno',
+                  );
+                } catch (_) {
+                  horarioExistente = null;
+                }
+
+                Horario horario;
+                if (horarioExistente != null) {
+                  horario = horarioExistente;
+                  print('Usando horario existente: [32m${horario.id}[0m');
+                } else {
+                  horario = await horarioProvider.createHorario(Horario(
+                    id: null,
+                    diaSemana: widget.dia,
+                    horaInicio: widget.intervalo['inicio']!,
+                    horaFin: widget.intervalo['fin']!,
+                    jornada: 'diurno'
+                  ));
+                  print('Horario creado: [32m${horario.id}[0m');
+                }
 
                 // 2. Crear la asignación de asignatura-programa-cohorte
                 print('Asignación a guardar:');
