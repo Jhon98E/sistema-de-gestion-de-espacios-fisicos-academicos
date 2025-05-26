@@ -23,7 +23,7 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -51,11 +51,11 @@ class AuthWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    
+
     if (!authProvider.isAuthenticated) {
       return const LoginView();
     }
-    
+
     return const HomePage();
   }
 }
@@ -73,11 +73,10 @@ class _HomePageState extends State<HomePage> {
 
   final List<Widget> _pages = [
     const SalonesScreen(),
+    const AsignaturasScreen(),
     const ProgramasScreen(),
     const CohortesScreen(),
-    const Center(child: Text('Notificaciones')),
     const HorariosScreen(),
-    const AsignaturasScreen(),
   ];
 
   void _onMenuSelected(String value) async {
@@ -96,16 +95,29 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void _onDestinationSelected(int index) {
+    setState(() {
+      if (index < 0 || index >= _pages.length) {
+        _selectedIndex = 0;
+      } else {
+        _selectedIndex = index;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Validar el índice seleccionado para evitar errores
     if (_selectedIndex < 0 || _selectedIndex >= _pages.length) {
       _selectedIndex = 0;
     }
     final authProvider = Provider.of<AuthProvider>(context);
     final usuario = authProvider.usuarioActual;
-    final String nombreUsuario = usuario != null ? '${usuario.nombre} ${usuario.apellido}' : 'Usuario';
+    final String nombreUsuario =
+        usuario != null ? '${usuario.nombre} ${usuario.apellido}' : 'Usuario';
     final String iniciales = usuario != null
-        ? (usuario.nombre.isNotEmpty ? usuario.nombre[0] : '') + (usuario.apellido.isNotEmpty ? usuario.apellido[0] : '')
+        ? (usuario.nombre.isNotEmpty ? usuario.nombre[0] : '') +
+            (usuario.apellido.isNotEmpty ? usuario.apellido[0] : '')
         : 'US';
 
     return Scaffold(
@@ -121,15 +133,7 @@ class _HomePageState extends State<HomePage> {
                     extended: _isDrawerOpen,
                     backgroundColor: AppTheme.primaryColor,
                     selectedIndex: _selectedIndex,
-                    onDestinationSelected: (int index) {
-                      setState(() {
-                        if (index < 0 || index >= _pages.length) {
-                          _selectedIndex = 0;
-                        } else {
-                          _selectedIndex = index;
-                        }
-                      });
-                    },
+                    onDestinationSelected: _onDestinationSelected,
                     useIndicator: true,
                     indicatorColor: Colors.white.withOpacity(0.2),
                     selectedIconTheme: const IconThemeData(
@@ -154,7 +158,9 @@ class _HomePageState extends State<HomePage> {
                         const SizedBox(height: 20),
                         IconButton(
                           icon: Icon(
-                            _isDrawerOpen ? Icons.chevron_left : Icons.chevron_right,
+                            _isDrawerOpen
+                                ? Icons.chevron_left
+                                : Icons.chevron_right,
                             color: Colors.white,
                           ),
                           onPressed: () {
@@ -185,6 +191,10 @@ class _HomePageState extends State<HomePage> {
                         label: Text('Salones'),
                       ),
                       NavigationRailDestination(
+                        icon: Icon(Icons.book),
+                        label: Text('Asignaturas'),
+                      ),
+                      NavigationRailDestination(
                         icon: Icon(Icons.school),
                         label: Text('Programas'),
                       ),
@@ -193,17 +203,13 @@ class _HomePageState extends State<HomePage> {
                         label: Text('Cohortes'),
                       ),
                       NavigationRailDestination(
-                        icon: Icon(Icons.notifications),
-                        label: Text('Notificaciones'),
-                      ),
-                      NavigationRailDestination(
                         icon: Icon(Icons.schedule),
                         label: Text('Horarios'),
                       ),
-                      NavigationRailDestination(
-                        icon: Icon(Icons.book),
-                        label: Text('Asignaturas'),
-                      ),
+                      // NavigationRailDestination(
+                      //   icon: Icon(Icons.notifications),
+                      //   label: Text('Notificaciones'),
+                      // ),
                     ],
                   ),
                 ),
@@ -212,7 +218,8 @@ class _HomePageState extends State<HomePage> {
                     ? Container(
                         color: AppTheme.primaryColor,
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 8),
                         child: ClipRect(
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -244,7 +251,8 @@ class _HomePageState extends State<HomePage> {
                                 width: 40,
                                 child: PopupMenuButton<String>(
                                   color: Colors.white,
-                                  icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+                                  icon: const Icon(Icons.keyboard_arrow_down,
+                                      color: Colors.white),
                                   onSelected: _onMenuSelected,
                                   itemBuilder: (context) => [
                                     const PopupMenuItem(
@@ -294,4 +302,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
