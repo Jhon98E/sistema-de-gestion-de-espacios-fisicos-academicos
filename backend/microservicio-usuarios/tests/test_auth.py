@@ -30,7 +30,7 @@ def test_logout(client: TestClient):
     assert "message" in response_data
     assert response_data["usuario"] == "LOGOUT001"
 
-def test_validate_token_valid(client: TestClient):
+def test_validar_token_valido(client: TestClient):
     """Test de validación de token válido"""
     usuario_validate = {
         "nombre": "Validate",
@@ -54,7 +54,7 @@ def test_validate_token_valid(client: TestClient):
     headers = {"Authorization": f"Bearer {token}"}
     
     # Validar token
-    response = client.post("/auth/validate-token", headers=headers)
+    response = client.post("/auth/validar-token", headers=headers)
     assert response.status_code == 200
     data = response.json()
     assert data["valid"]
@@ -63,10 +63,10 @@ def test_validate_token_valid(client: TestClient):
     assert data["codigo_usuario"] == "VALIDATE001"
     assert "rol" in data
 
-def test_validate_token_invalid(client: TestClient):
+def test_validar_token_invalido(client: TestClient):
     """Test de validación de token inválido"""
     headers = {"Authorization": "Bearer token_completamente_invalido"}
-    response = client.post("/auth/validate-token", headers=headers)
+    response = client.post("/auth/validar-token", headers=headers)
     assert response.status_code == 401
 
 # Tests originales corregidos
