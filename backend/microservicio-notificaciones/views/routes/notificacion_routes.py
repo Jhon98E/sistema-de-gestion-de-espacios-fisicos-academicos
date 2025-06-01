@@ -35,17 +35,6 @@ async def enviar_notificacion_registro(datos: NotificacionRegistroUsuario):
         logging.error(f"Error al enviar notificación de registro: {e}")
         raise HTTPException(status_code=500, detail="Error interno del servidor")
 
-@router.post("/recuperacion-password")
-async def enviar_notificacion_recuperacion(datos: NotificacionRecuperacionPassword):
-    """Endpoint específico para notificaciones de recuperación de contraseña"""
-    try:
-        notificacion = notificacion_service.crear_notificacion_recuperacion(datos)
-        await enviar_mensaje_rabbitmq(notificacion.dict())
-        return {"mensaje": "Notificación de recuperación enviada"}
-    except Exception as e:
-        logging.error(f"Error al enviar notificación de recuperación: {e}")
-        raise HTTPException(status_code=500, detail="Error interno del servidor")
-
 @router.post("/horario")
 async def enviar_notificacion_horario(datos: NotificacionHorario):
     """Endpoint específico para notificaciones de horarios"""

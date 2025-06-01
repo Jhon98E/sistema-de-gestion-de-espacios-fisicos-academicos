@@ -28,11 +28,6 @@ class NotificacionRegistroUsuario(BaseModel):
     nombre_completo: str
     codigo_usuario: str
 
-class NotificacionRecuperacionPassword(BaseModel):
-    email: EmailStr
-    nombre_completo: str
-    token_recuperacion: str
-
 class NotificacionHorario(BaseModel):
     email: EmailStr
     nombre_completo: str

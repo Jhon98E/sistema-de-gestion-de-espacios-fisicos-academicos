@@ -16,22 +16,6 @@ Saludos,
 Equipo de Gestión de Espacios
     """,
     
-    "recuperacion_password": """
-Hola {nombre_completo},
-
-Has solicitado recuperar tu contraseña en el Sistema de Gestión de Espacios.
-
-Para establecer una nueva contraseña, utiliza el siguiente código de recuperación:
-{token_recuperacion}
-
-Este código es válido por 15 minutos por seguridad.
-
-Si no solicitaste esta recuperación, puedes ignorar este correo.
-
-Saludos,
-Equipo de Gestión de Espacios
-    """,
-    
     "horario": """
 Hola {nombre_completo},
 

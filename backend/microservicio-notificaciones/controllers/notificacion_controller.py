@@ -1,7 +1,6 @@
 from models.notificacion import (
     Notificacion, 
     NotificacionRegistroUsuario,
-    NotificacionRecuperacionPassword,
     NotificacionHorario,
     TipoNotificacion,
     EstadoNotificacion
@@ -29,27 +28,6 @@ class NotificacionService:
             datos_adicionales={
                 "nombre_completo": datos.nombre_completo,
                 "codigo_usuario": datos.codigo_usuario
-            }
-        )
-    
-    def crear_notificacion_recuperacion(self, datos: NotificacionRecuperacionPassword) -> Notificacion:
-        """Crear notificación para recuperación de contraseña"""
-        asunto = "Recuperación de Contraseña - Sistema de Gestión de Espacios"
-        mensaje = TEMPLATES_EMAIL["recuperacion_password"].format(
-            nombre_completo=datos.nombre_completo,
-            token_recuperacion=datos.token_recuperacion
-        )
-        
-        return Notificacion(
-            destinatario=datos.email,
-            asunto=asunto,
-            mensaje=mensaje,
-            tipo=TipoNotificacion.RECUPERACION_PASSWORD,
-            estado=EstadoNotificacion.PENDIENTE,
-            fecha_creacion=datetime.now().isoformat(),
-            datos_adicionales={
-                "nombre_completo": datos.nombre_completo,
-                "token_recuperacion": datos.token_recuperacion
             }
         )
     
