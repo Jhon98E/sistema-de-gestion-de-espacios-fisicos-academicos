@@ -4,7 +4,6 @@ from typing import Optional
 
 class TipoNotificacion(str, Enum):
     REGISTRO_USUARIO = "registro_usuario"
-    RECUPERACION_PASSWORD = "recuperacion_password"
     HORARIO_CREADO = "horario_creado"
     HORARIO_ACTUALIZADO = "horario_actualizado"
     HORARIO_ELIMINADO = "horario_eliminado"

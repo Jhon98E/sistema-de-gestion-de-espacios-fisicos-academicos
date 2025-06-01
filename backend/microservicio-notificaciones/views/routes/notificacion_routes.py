@@ -1,10 +1,9 @@
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from models.notificacion import (
     Notificacion, 
-    NotificacionRegistroUsuario, 
-    NotificacionRecuperacionPassword,
+    NotificacionRegistroUsuario,
     NotificacionHorario,
-    TipoNotificacion
+    TipoNotificacion # noqa: F401
 )
 from controllers.services.rabbitmq_producer import enviar_mensaje_rabbitmq
 from controllers.notificacion_controller import NotificacionService
