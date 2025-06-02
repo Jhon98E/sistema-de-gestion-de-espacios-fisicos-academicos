@@ -33,16 +33,10 @@ jobs:
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-    - name: Auto-fix with ruff
-      working-directory: backend/microservicio-notificaciones
-      run: |
-        ruff check . --fix
-
-    - name: Linting with ruff (ignore unused variables)
+    - name: Linting and auto-fix with ruff (ignore unused variables)
       working-directory: backend/microservicio-notificaciones
       run: |
         ruff check . --fix --ignore F841
-
 
     - name: Login to DockerHub
       uses: docker/login-action@v3
