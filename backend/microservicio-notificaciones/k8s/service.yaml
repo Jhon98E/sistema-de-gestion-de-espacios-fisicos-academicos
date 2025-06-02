@@ -1,12 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: notificaciones-service
+  name: ms-notificaciones
 spec:
   selector:
     app: notificaciones
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 8000
-  type: LoadBalancer
+      port: 8006
+      targetPort: 8006

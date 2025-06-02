@@ -4,7 +4,7 @@ import logging
 
 class NotificacionService:
     def __init__(self):
-        self.base_url = os.getenv("NOTIFICACIONES_SERVICE_URL", "http://localhost:8006")
+        self.base_url = os.getenv("NOTIFICACIONES_SERVICE_URL", "http://ms-notificaciones:8006")
         self.timeout = 10.0
     
     async def enviar_notificacion_registro(self, email: str, nombre_completo: str, codigo_usuario: str) -> bool:

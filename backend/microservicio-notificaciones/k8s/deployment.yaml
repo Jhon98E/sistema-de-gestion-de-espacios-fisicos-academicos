@@ -13,7 +13,22 @@ spec:
         app: notificaciones
     spec:
       containers:
-      - name: notificaciones
-        image: notificaciones-microservicio:latest
-        ports:
-        - containerPort: 8000
+        - name: ms-notificaciones
+          image: jhonenriquez98/ms-notificaciones:latest
+          ports:
+            - containerPort: 8006
+          env:
+            - name: SMTP_SERVER
+              value: "smtp.gmail.com"
+            - name: SMTP_PORT
+              value: "587"
+            - name: SMTP_USUARIO
+              value: "notificaciones.espacios.app@gmail.com"
+            - name: SMTP_PASSWORD
+              value: "mrszxudoxjyzqone"  # Esta es tu contraseña de aplicación
+            - name: EMAIL_REMITENTE
+              value: "notificaciones.espacios.app@gmail.com"
+            - name: DATABASE_URL
+              value: "postgresql://postgres:root@postgres:5432/asignacion_espacios"
+            - name: RABBITMQ_URL
+              value: "amqp://admin:admin123@rabbitmq.default.svc.cluster.local:5672/" # Asegúrate de que la URL sea correcta según tu configuración de RabbitMQ
