@@ -36,7 +36,7 @@ jobs:
     - name: Auto-fix with ruff
       working-directory: backend/microservicio-notificaciones
       run: |
-        ruff --fix .
+        ruff check . --fix
 
     - name: Linting with ruff (check no remaining issues)
       working-directory: backend/microservicio-notificaciones
