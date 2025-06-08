@@ -1,6 +1,6 @@
 import httpx
 from sqlalchemy.orm import Session
-from models.external.asignatura_programa_cohorte import AsignaturaProgramaCohorte, AsignaturaProgramaCohorteBase
+from models.external.asignatura_programa_cohorte import AsignaturaProgramaCohorteBase, AsignaturaProgramaCohorte
 from models.external.asignatura_programa_cohorte_detalle import AsignaturaProgramaCohorteDetalle
 from models.external.asignatura_programa import AsignaturaPrograma
 from models.horario_model import HorarioDB
@@ -50,33 +50,7 @@ async def verificar_salon_existe(salon_id: int):
             )
 
 # ✅ NUEVO: controlador que valida antes de guardar
-async def crear_asignatura_programa_cohorte(asignatura_programa_cohorte_data, db: Session):
-    # 1. Buscar la asignatura_programa por ID
-    asignatura_programa = db.query(AsignaturaPrograma).filter(
-        AsignaturaPrograma.id == asignatura_programa_cohorte_data.asignatura_programa_id
-    ).first()
-
-    if not asignatura_programa:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Asignatura-Programa no encontrada")
-
-    # 2. Obtener el programa_id desde la relación
-    programa_id = asignatura_programa.programa_id
-
-    # 3. Validar que el programa exista
-    await verificar_programa_existe(programa_id)
-
-    await verificar_salon_existe(asignatura_programa_cohorte_data.salon_id)
-    
-
-    # 4. Validar que el cohorte exista (si es necesario, descomentar este paso)
-    # await verificar_cohorte_existe(asignatura_programa_cohorte_data.cohorte_id)
-
-    # 5. Validar que el horario exista
-    horario_db = db.query(HorarioDB).filter(HorarioDB.id == asignatura_programa_cohorte_data.horario_id).first()
-    if not horario_db:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Horario no encontrado")
-
-    # 6. Crear el objeto
+async def crear_asignatura_programa_cohorte(asignatura_programa_cohorte_data: AsignaturaProgramaCohorteBase, db: Session):
     asignatura_programa_cohorte = AsignaturaProgramaCohorte(
         asignatura_programa_id=asignatura_programa_cohorte_data.asignatura_programa_id,
         salon_id=asignatura_programa_cohorte_data.salon_id,
@@ -89,8 +63,7 @@ async def crear_asignatura_programa_cohorte(asignatura_programa_cohorte_data, db
     db.commit()
     db.refresh(asignatura_programa_cohorte)
 
-    # No necesitas modificar nada más aquí, solo devolver el objeto
-    return asignatura_programa_cohorte
+    return AsignaturaProgramaCohorteBase.model_validate(asignatura_programa_cohorte)
 
 
 def eliminar_asignatura_programa_cohorte(id: int, db: Session):

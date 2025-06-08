@@ -6,16 +6,19 @@ from controllers.repositories.database import Base
 from models.external.asignatura_programa import AsignaturaPrograma # noqa: F401
 from models.external.salones_model import SalonDB # noqa: F401
 from models.horario_model import HorarioDB # noqa: F401
+from typing import Optional
 
 class AsignaturaProgramaCohorteBase(BaseModel):
+    id: Optional[int] = None
     asignatura_programa_id: int
     salon_id: int
     horario_id: int
     fecha_inicio: date
     fecha_fin: date
     
-    class Config:
-        orm_mode = True 
+    model_config = {
+        "from_attributes": True,
+    }
 
 class AsignaturaProgramaCohorte(Base):
     __tablename__ = "asignaturas_programas_cohortes"

@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from models.horario_model import Horario, HorarioDB
 from fastapi import HTTPException, status
 from controllers.services.notificacion_service import NotificacionService
+from sqlalchemy import and_
 
 notificacion_service = NotificacionService()
 
@@ -14,41 +15,50 @@ def obtener_horario_por_id(id: int, db: Session):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Horario con ID {id} no fue encontrado")
     return horario
 
-async def crear_horario(data: Horario, db: Session, usuario_actual: dict):
-    existe = db.query(HorarioDB).filter(
-        HorarioDB.dia_semana == data.dia_semana,
-        HorarioDB.hora_inicio == data.hora_inicio,
-        HorarioDB.hora_fin == data.hora_fin,
-        HorarioDB.jornada == data.jornada
+async def crear_horario(horario: Horario, db: Session, usuario_actual: dict):
+    # Verificar si ya existe un horario con los mismos datos
+    horario_existente = db.query(HorarioDB).filter(
+        and_(
+            HorarioDB.dia_semana == horario.dia_semana,
+            HorarioDB.hora_inicio == horario.hora_inicio,
+            HorarioDB.hora_fin == horario.hora_fin,
+            HorarioDB.jornada == horario.jornada
+        )
     ).first()
-    if existe:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Ya existe un horario con esos datos")
-    
-    nuevo_horario = HorarioDB(
-        dia_semana = data.dia_semana,
-        hora_inicio = data.hora_inicio,
-        hora_fin = data.hora_fin,
-        jornada = data.jornada
-    )
-    
-    db.add(nuevo_horario)
-    db.commit()
-    db.refresh(nuevo_horario)
 
-    # 🔔 Enviar notificación (ajustar datos reales del usuario si se tienen)
-    await notificacion_service.enviar_notificacion_horario(
-        email = usuario_actual["email"],
-        nombre_completo = usuario_actual["nombre_completo"],
-        detalles={
-            "dia": data.dia_semana,
-            "hora_inicio": str(data.hora_inicio),
-            "hora_fin": str(data.hora_fin),
-            "jornada": data.jornada
-        },
-        accion="creado"
-    )
+    if horario_existente:
+        raise HTTPException(
+            status_code=409,
+            detail="Ya existe un horario con estos mismos datos"
+        )
 
-    return nuevo_horario
+    try:
+        horario_db = HorarioDB(
+            dia_semana=horario.dia_semana,
+            hora_inicio=horario.hora_inicio,
+            hora_fin=horario.hora_fin,
+            jornada=horario.jornada
+        )
+        db.add(horario_db)
+        db.commit()
+        db.refresh(horario_db)
+        
+        # Enviar notificación
+        try:
+            await notificacion_service.enviar_notificacion_horario(
+                "Horario creado",
+                f"Se ha creado un nuevo horario por {usuario_actual['nombre_completo']}"
+            )
+        except Exception as e:
+            print(f"Error al enviar notificación: {e}")
+        
+        return horario_db
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al crear horario: {str(e)}"
+        )
 
 def actualizar_horario(id: int, data: Horario, db: Session):
     horario_db = db.query(HorarioDB).filter(HorarioDB.id == id).first()

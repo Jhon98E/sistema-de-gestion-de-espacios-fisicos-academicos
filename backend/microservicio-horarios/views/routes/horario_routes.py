@@ -18,7 +18,7 @@ async def consultar_horario(id: int, db: Session = Depends(get_db), usuario_actu
 
 @horario_router.post("/crear-horario", response_model=Horario, status_code=201)
 async def crear_horario(horario: Horario, db: Session = Depends(get_db), usuario_actual: dict = Depends(obtener_usuario_actual)):
-    return await horario_controller.crear_horario(horario, db)
+    return await horario_controller.crear_horario(horario, db, usuario_actual)
 
 @horario_router.put("/actualizar-horario/{id}", response_model=Horario)
 async def actualizar_horario(id: int, horario: Horario, db: Session = Depends(get_db), usuario_actual: dict = Depends(obtener_usuario_actual)):
