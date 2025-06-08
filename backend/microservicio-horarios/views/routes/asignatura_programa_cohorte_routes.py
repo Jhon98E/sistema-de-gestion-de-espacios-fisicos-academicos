@@ -7,7 +7,7 @@ from models.external.asignatura_programa_cohorte import AsignaturaProgramaCohort
 from models.external.asignatura_programa_cohorte_detalle import AsignaturaProgramaCohorteDetalle # noqa: F401
 
 
-router = APIRouter()
+router = APIRouter(tags=["AsignaturaProgramaCohorte"])
 
 # Rutas para AsignaturaProgramaCohorte
 @router.get("/asignaturas_programas_cohortes")

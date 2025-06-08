@@ -3,7 +3,7 @@ from models.asignatura_model import Asignatura
 from controllers import asignatura_controller
 from sqlalchemy.orm import Session
 from controllers.repositories.database import get_db
-from controllers.services.auth_service import obtener_usuario_actual
+from controllers.services.auth.auth_service import obtener_usuario_actual
 
 
 asignatura_router = APIRouter(prefix="/asignaturas", tags=["Asignaturas"])

@@ -20,3 +20,6 @@ spec:
         env:
         - name: DATABASE_URL
           value: "postgresql://postgres:root@postgres:5432/asignacion_espacios"
+
+        - name: USUARIOS_SERVICE_URL
+          value: "http://usuarios-service:8000"

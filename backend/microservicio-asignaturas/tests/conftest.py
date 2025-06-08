@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 from main import app
 from controllers.repositories.database import Base, get_db
-from controllers.services.auth_service import obtener_usuario_actual
+from controllers.services.auth.auth_service import obtener_usuario_actual
 
 # Mock del usuario autenticado para pruebas
 async def mock_usuario_actual():

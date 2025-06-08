@@ -2,13 +2,14 @@ import pytest
 from unittest.mock import patch, AsyncMock
 from datetime import date
 from models.cohortes_model import CohorteDB
+from main import app
 
 
 # Mock para simular la verificación de programas
 @pytest.fixture
 def mock_verificar_programa():
     with patch("controllers.cohortes_controller.verificar_programa_existe", new_callable=AsyncMock) as mock:
-        mock.return_value = None  # Simulamos que el programa existe
+        mock.return_value = None
         yield mock
 
 
@@ -117,3 +118,12 @@ def test_cohorte_no_existente(client):
     response = client.get("/cohortes/999")
     assert response.status_code == 404
     assert "no fue encontrada" in response.json()["detail"]
+
+
+def test_acceso_no_autorizado(client):
+    # Temporalmente quitamos el mock de autenticación
+    app.dependency_overrides.clear()
+    
+    response = client.get("/cohortes/")
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated"

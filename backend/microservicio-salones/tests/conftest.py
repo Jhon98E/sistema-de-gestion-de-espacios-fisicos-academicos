@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from controllers.repositories.database import Base, get_db
 from fastapi.testclient import TestClient
 from main import app
-from controllers.services.auth_service import obtener_usuario_actual
+from controllers.services.auth.auth_service import obtener_usuario_actual
 
 # Base de datos en memoria para pruebas
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"

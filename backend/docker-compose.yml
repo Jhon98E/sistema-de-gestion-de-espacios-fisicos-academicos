@@ -93,6 +93,7 @@ services:
     container_name: ms-cohortes
     environment:
       - DATABASE_URL=postgresql://postgres:root@postgres:5432/asignacion_espacios
+      - USUARIOS_SERVICE_URL=http://ms-usuarios:8000
     ports:
       - "8003:8003"
     depends_on:

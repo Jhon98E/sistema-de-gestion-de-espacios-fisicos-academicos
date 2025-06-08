@@ -9,7 +9,7 @@ from controllers.salones_controller import (
     actualizar_salon,
     eliminar_salon,
 )
-from controllers.services.auth_service import obtener_usuario_actual
+from controllers.services.auth.auth_service import obtener_usuario_actual
 
 salon_router = APIRouter(prefix="/salones", tags=["Salones"])
 
