@@ -2,16 +2,27 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from unittest.mock import patch
 
 from main import app
 from controllers.repositories.database import Base, get_db
+from controllers.services.auth_service import obtener_usuario_actual
 
-# 🔧 Crear base de datos en memoria
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"  # También puedes usar "sqlite:///:memory:"
+# Mock del usuario autenticado para pruebas
+async def mock_usuario_actual():
+    return {
+        "user_id": 1,
+        "codigo_usuario": "2260647",
+        "rol": "admin",
+        "email": "test@test.com",
+        "nombre_completo": "Usuario Test"
+    }
+
+# Base de datos en memoria para pruebas
+SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# 🧪 Fixture para la DB y el cliente
 @pytest.fixture(scope="function")
 def db_session():
     Base.metadata.create_all(bind=engine)
@@ -29,5 +40,12 @@ def client(db_session):
             yield db_session
         finally:
             pass
+
+    # Sobreescribimos las dependencias
     app.dependency_overrides[get_db] = override_get_db
-    return TestClient(app)
+    app.dependency_overrides[obtener_usuario_actual] = mock_usuario_actual
+
+    yield TestClient(app)
+    
+    # Limpiamos las dependencias después de las pruebas
+    app.dependency_overrides.clear()

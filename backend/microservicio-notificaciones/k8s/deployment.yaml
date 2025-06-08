@@ -20,15 +20,21 @@ spec:
           env:
             - name: SMTP_SERVER
               value: "smtp.gmail.com"
+
             - name: SMTP_PORT
               value: "587"
+
             - name: SMTP_USUARIO
               value: "notificaciones.espacios.app@gmail.com"
+
             - name: SMTP_PASSWORD
-              value: "mrszxudoxjyzqone"  # Esta es tu contraseña de aplicación
+              value: "mrszxudoxjyzqone"
+
             - name: EMAIL_REMITENTE
               value: "notificaciones.espacios.app@gmail.com"
+
             - name: DATABASE_URL
               value: "postgresql://postgres:root@postgres:5432/asignacion_espacios"
+
             - name: RABBITMQ_URL
-              value: "amqp://admin:admin123@rabbitmq.default.svc.cluster.local:5672/" # Asegúrate de que la URL sea correcta según tu configuración de RabbitMQ
+              value: "amqp://admin:admin123@rabbitmq.default.svc.cluster.local:5672/"
