@@ -1,7 +1,6 @@
 from fastapi.testclient import TestClient
 from models.schemas.programa_schemas import Programa # noqa: F401
 from main import app
-import pytest
 
 def test_crear_programa(client: TestClient):
     response = client.post("/programas/", json={
