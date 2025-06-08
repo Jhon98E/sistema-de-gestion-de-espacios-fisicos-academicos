@@ -1,4 +1,3 @@
-from fastapi.testclient import TestClient
 import pytest
 
 # Token de prueba (puedes usar uno fijo para tests)
