@@ -1,6 +1,4 @@
-from datetime import time
 from main import app
-from fastapi.testclient import TestClient
 import pytest
 from controllers.services.auth.auth_service import obtener_usuario_actual
 
