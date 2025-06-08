@@ -19,7 +19,7 @@ services:
       retries: 5
       start_period: 30s
     networks:
-      - app_network
+      - red_compartida
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -38,7 +38,7 @@ services:
       timeout: 10s
       retries: 5
     networks:
-      - app_network
+      - red_compartida
 
   microservicio-usuarios:
     build: ./microservicio-usuarios
@@ -53,7 +53,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     networks:
-      - app_network
+      - red_compartida
 
   microservicio-notificaciones:
     build: ./microservicio-notificaciones
@@ -70,12 +70,95 @@ services:
         condition: service_healthy
     restart: unless-stopped
     networks:
-      - app_network
+      - red_compartida
+
+  microservicio-programas:
+    build: ./microservicio-programas
+    container_name: ms-programas
+    environment:
+      - DATABASE_URL=postgresql://postgres:root@postgres:5432/asignacion_espacios
+    ports:
+      - "8001:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - red_compartida
+
+  microservicio-cohortes:
+    build: ./microservicio-cohortes
+    container_name: ms-cohortes
+    environment:
+      - DATABASE_URL=postgresql://postgres:root@postgres:5432/asignacion_espacios
+    ports:
+      - "8003:8003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - red_compartida
+
+  microservicio-asignaturas:
+    build: ./microservicio-asignaturas
+    container_name: ms-asignaturas
+    environment:
+      - DATABASE_URL=postgresql://postgres:root@postgres:5432/asignacion_espacios
+    ports:
+      - "8002:8002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - red_compartida
+
+  microservicio-salones:
+    build: ./microservicio-salones
+    container_name: ms-salones
+    environment:
+      - DATABASE_URL=postgresql://postgres:root@postgres:5432/asignacion_espacios
+      - USUARIOS_SERVICE_URL=http://ms-usuarios:8000
+    ports:
+      - "8004:8004"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - red_compartida
+
+  microservicio-horarios:
+    build: ./microservicio-horarios
+    container_name: ms-horarios
+    environment:
+      - DATABASE_URL=postgresql://postgres:root@postgres:5432/asignacion_espacios
+      - USUARIOS_SERVICE_URL=http://ms-usuarios:8000
+      - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672/
+    ports:
+      - "8005:8005"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - red_compartida
 
 volumes:
   postgres_data:
   rabbitmq_data:
 
 networks:
-  app_network:
+  red_compartida:
     driver: bridge

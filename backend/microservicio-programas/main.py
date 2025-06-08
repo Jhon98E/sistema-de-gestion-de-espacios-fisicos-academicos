@@ -7,7 +7,7 @@ from controllers.repositories.database import Base, engine
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Código de startup: aquí creamos las tablas
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=engine, checkfirst=True)
     yield
     # Código de apagado: aquí eliminamos las tablas
 

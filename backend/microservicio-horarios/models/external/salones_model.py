@@ -21,5 +21,3 @@ class SalonDB(Base):
     capacidad = Column(Integer, nullable=False)
     disponibilidad = Column(Boolean, nullable=False)
     tipo = Column(String, nullable=True)
-
-

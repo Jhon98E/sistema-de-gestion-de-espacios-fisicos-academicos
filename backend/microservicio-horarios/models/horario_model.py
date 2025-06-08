@@ -41,8 +41,3 @@ class HorarioDB(Base):
     hora_inicio = Column(Time, nullable=False)
     hora_fin = Column(Time, nullable=False)
     jornada = Column(SQLAlchemyEnum(Jornada), nullable=False)
-
-
-
-    
-    

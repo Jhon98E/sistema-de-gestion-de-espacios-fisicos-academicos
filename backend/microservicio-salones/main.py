@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan (app:FastAPI):
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=engine, checkfirst=True)
     yield
 
 app=FastAPI(lifespan=lifespan, title= "Microservicio Gestion de Salones")

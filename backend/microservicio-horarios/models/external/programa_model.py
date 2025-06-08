@@ -8,5 +8,3 @@ class Programa(Base):
     nombre = Column(String, nullable=False, index=True)    
     descripcion = Column(String, nullable=True)
     codigo_programa = Column(String(4), nullable=False, unique=True)
-
-    

@@ -30,4 +30,3 @@ class AsignaturaProgramaCohorte(Base):
     asignaturas_programas = relationship("AsignaturaPrograma", backref="asignaturas_programas_cohortes")
     salon = relationship("SalonDB", backref="asignatura_programa_cohorte")
     horarios = relationship("HorarioDB", backref="asignatura_programa_cohorte")
-    

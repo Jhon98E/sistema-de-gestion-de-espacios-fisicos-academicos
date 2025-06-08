@@ -1,6 +1,9 @@
 from sqlalchemy.orm import Session
 from models.horario_model import Horario, HorarioDB
 from fastapi import HTTPException, status
+from controllers.services.notificacion_service import NotificacionService
+
+notificacion_service = NotificacionService()
 
 def obtener_horarios(db: Session):
     return db.query(HorarioDB).all()
@@ -11,8 +14,7 @@ def obtener_horario_por_id(id: int, db: Session):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Horario con ID {id} no fue encontrado")
     return horario
 
-def crear_horario(data: Horario, db: Session):
-    # Opcional: verificar si ya existe un horario en ese mismo día, hora y jornada
+async def crear_horario(data: Horario, db: Session, usuario_actual: dict):
     existe = db.query(HorarioDB).filter(
         HorarioDB.dia_semana == data.dia_semana,
         HorarioDB.hora_inicio == data.hora_inicio,
@@ -32,6 +34,20 @@ def crear_horario(data: Horario, db: Session):
     db.add(nuevo_horario)
     db.commit()
     db.refresh(nuevo_horario)
+
+    # 🔔 Enviar notificación (ajustar datos reales del usuario si se tienen)
+    await notificacion_service.enviar_notificacion_horario(
+        email = usuario_actual["email"],
+        nombre_completo = usuario_actual["nombre_completo"],
+        detalles={
+            "dia": data.dia_semana,
+            "hora_inicio": str(data.hora_inicio),
+            "hora_fin": str(data.hora_fin),
+            "jornada": data.jornada
+        },
+        accion="creado"
+    )
+
     return nuevo_horario
 
 def actualizar_horario(id: int, data: Horario, db: Session):
