@@ -3,22 +3,22 @@ from sqlalchemy.orm import Session
 from models.external.asignatura_programa import AsignaturaPrograma
 from models.programa_model import Programa
 from fastapi import HTTPException, status
+from models.external.asignatura_model import AsignaturaDB
 
 ASIGNATURAS_URL = "http://ms-asignaturas:8002/asignatura"  # URL del microservicio de asignaturas
 
 # Función para verificar si la asignatura existe
-async def verificar_asignatura_existe(asignatura_id: int):
-    async with httpx.AsyncClient() as client:
-        response = await client.get(f"{ASIGNATURAS_URL}/{asignatura_id}")
-        if response.status_code != 200:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"La asignatura con ID {asignatura_id} no existe en el microservicio de asignaturas."
-            )
+def verificar_asignatura_existe(asignatura_id: int, db: Session):
+    asignatura = db.query(AsignaturaDB).filter(AsignaturaDB.id == asignatura_id).first()
+    if not asignatura:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"La asignatura con ID {asignatura_id} no existe en la base de datos."
+        )
 
 async def asignar_asignatura_programa(data, db: Session):
     #  Verificar si la asignatura existe usando el microservicio
-    await verificar_asignatura_existe(data.asignatura_id)
+    verificar_asignatura_existe(data.asignatura_id, db)
 
     #  Verificar si el programa existe localmente (porque estás en el microservicio de programas)
     programa_db = db.query(Programa).filter(Programa.id == data.programa_id).first()
