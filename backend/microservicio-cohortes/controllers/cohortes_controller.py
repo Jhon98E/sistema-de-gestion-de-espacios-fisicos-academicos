@@ -8,14 +8,13 @@ from models.external.programa_model import Programa # noqa: F401
 PROGRAMAS_URL = "http://ms-programas:8001/programas"  # URL de tu microservicio de programas
 
 # Función para verificar si el programa existe
-async def verificar_programa_existe(programa_id: int):
-    async with httpx.AsyncClient() as client:
-        response = await client.get(f"{PROGRAMAS_URL}/{programa_id}")
-        if response.status_code != 200:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"El programa con ID {programa_id} no existe en el microservicio de programas."
-            )
+def verificar_programa_existe(programa_id: int, db: Session):
+    programa = db.query(Programa).filter(Programa.id == programa_id).first()
+    if not programa:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"El programa con ID {programa_id} no existe en la base de datos."
+        )
 
 
 def obtenerCohortes(db: Session):
@@ -40,7 +39,7 @@ async def crearCohorte(cohorte: Cohorte, db: Session):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"La cohorte {cohorte.nombre} ya existe.")
     
     # ✅ Validar si el programa existe usando el microservicio
-    await verificar_programa_existe(cohorte.programa_id)
+    verificar_programa_existe(cohorte.programa_id, db)
 
     nueva_cohorte = CohorteDB(
         nombre=cohorte.nombre,
@@ -61,7 +60,7 @@ async def actualizarCohorte(id: int, cohorte_actualizada: Cohorte, db: Session):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"La cohorte con ID {id} no fue encontrada.")
     
     # ✅ Validar si el programa existe antes de actualizar
-    await verificar_programa_existe(cohorte_actualizada.programa_id)
+    verificar_programa_existe(cohorte_actualizada.programa_id, db)
 
     cohorte_db.nombre = cohorte_actualizada.nombre
     cohorte_db.programa_id = cohorte_actualizada.programa_id
