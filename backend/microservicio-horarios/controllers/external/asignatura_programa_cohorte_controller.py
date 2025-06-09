@@ -2,6 +2,8 @@ import httpx
 from sqlalchemy.orm import Session
 from models.external.asignatura_programa_cohorte import AsignaturaProgramaCohorteBase, AsignaturaProgramaCohorte
 from models.external.asignatura_programa_cohorte_detalle import AsignaturaProgramaCohorteDetalle
+from models.external.programa_model import Programa
+from models.external.cohortes_model import CohorteDB
 from models.external.asignatura_programa import AsignaturaPrograma
 from models.external.salones_model import SalonDB
 from models.horario_model import HorarioDB
@@ -21,25 +23,21 @@ def obtener_asignatura_programa_cohorte_por_id(id: int, db: Session):
 
 
 # ✅ Puedes replicar para programa_id, cohorte_id si lo necesitas
-async def verificar_programa_existe(programa_id: int):
-    async with httpx.AsyncClient() as client:
-        response = await client.get(f"{PROGRAMAS_URL}/{programa_id}")
-        if response.status_code != 200:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"El programa con ID {programa_id} no existe en el microservicio de programas."
-            )
-        
+def verificar_programa_existe(programa_id: int, db: Session):
+    programa = db.query(Programa).filter(Programa.id == programa_id).first()
+    if not programa:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"El programa con ID {programa_id} no existe en la base de datos."
+        )
 
-# ✅ Puedes replicar para cohorte_id si lo necesitas
-async def verificar_cohorte_existe(cohorte_id: int):
-    async with httpx.AsyncClient() as client:
-        response = await client.get(f"{COHORTES_URL}/{cohorte_id}")
-        if response.status_code != 200:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"El cohorte con ID {cohorte_id} no existe en el microservicio de cohortes."
-            )
+def verificar_cohorte_existe(cohorte_id: int, db: Session):
+    cohorte = db.query(CohorteDB).filter(CohorteDB.id == cohorte_id).first()
+    if not cohorte:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"El cohorte con ID {cohorte_id} no existe en la base de datos."
+        )
             
 def verificar_salon_existe(salon_id: int, db: Session):
     salon = db.query(SalonDB).filter(SalonDB.id == salon_id).first()
@@ -83,7 +81,7 @@ def obtener_asignatura_programa_cohorte_detalle_por_id(id: int, db: Session):
     return db.query(AsignaturaProgramaCohorteDetalle).filter(AsignaturaProgramaCohorteDetalle.id == id).first()
 
 
-async def crear_asignatura_programa_cohorte_detalle(asignatura_programa_cohorte_id: int, cohorte_id: int, db: Session):
+def crear_asignatura_programa_cohorte_detalle(asignatura_programa_cohorte_id: int, cohorte_id: int, db: Session):
     asignatura_programa_cohorte = db.query(AsignaturaProgramaCohorte).filter(
         AsignaturaProgramaCohorte.id == asignatura_programa_cohorte_id
     ).first()
@@ -91,8 +89,8 @@ async def crear_asignatura_programa_cohorte_detalle(asignatura_programa_cohorte_
     if not asignatura_programa_cohorte:
         raise HTTPException(status_code=404, detail="Asignatura-Programa-Cohorte no encontrada")
 
-    # Validar existencia del cohorte
-    await verificar_cohorte_existe(cohorte_id)
+    # Validar existencia del cohorte (sin await, y pasando `db`)
+    verificar_cohorte_existe(cohorte_id, db)
 
     # Verificar si ya existe un detalle con esa combinación
     existente = db.query(AsignaturaProgramaCohorteDetalle).filter(
