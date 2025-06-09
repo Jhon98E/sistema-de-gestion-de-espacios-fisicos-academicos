@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from controllers.external.asignatura_programa_cohorte_controller import obtener_asignaturas_programas_cohortes, obtener_asignatura_programa_cohorte_por_id, crear_asignatura_programa_cohorte, eliminar_asignatura_programa_cohorte, obtener_asignaturas_programas_cohortes_detalle, crear_asignatura_programa_cohorte_detalle, eliminar_asignatura_programa_cohorte_detalle, actualizar_asignatura_programa_cohorte
+from controllers.external.asignatura_programa_cohorte_controller import obtener_asignaturas_programas_cohortes, obtener_asignatura_programa_cohorte_por_id, crear_asignatura_programa_cohorte, eliminar_asignatura_programa_cohorte, obtener_asignaturas_programas_cohortes_detalle, obtener_asignatura_programa_cohorte_detalle_por_id, crear_asignatura_programa_cohorte_detalle, eliminar_asignatura_programa_cohorte_detalle, actualizar_asignatura_programa_cohorte
 from controllers.repositories.database import get_db
 from controllers.services.auth.auth_service import obtener_usuario_actual
 from models.external.asignatura_programa_cohorte import AsignaturaProgramaCohorteBase, AsignaturaProgramaCohorte # noqa: F401
@@ -47,7 +47,8 @@ async def create_asignatura_programa_cohorte_detalle(
 
 @router.get("/asignaturas_programas_cohortes_detalles/{id}")
 def get_asignatura_programa_cohorte_detalle(id: int, db: Session = Depends(get_db), usuario_actual: dict = Depends(obtener_usuario_actual)):
-    return obtener_asignaturas_programas_cohortes_detalle(id, db)
+    return obtener_asignatura_programa_cohorte_detalle_por_id(id, db)
+
 
 
 @router.delete("/asignaturas_programas_cohortes_detalles/{id}")
