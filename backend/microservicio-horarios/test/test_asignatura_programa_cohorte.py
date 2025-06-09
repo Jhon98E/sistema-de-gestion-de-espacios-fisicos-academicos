@@ -221,7 +221,7 @@ def test_crear_asignatura_programa_cohorte_detalle(client, db_session):
     assert "message" in response_data
     assert "data" in response_data
     
-@pytest.mark.skip(reason="Saltando temporalmente por error await en dict")
+
 def test_obtener_asignaturas_programas_cohortes_detalles(client, db_session):
     # Preparar datos y crear un detalle primero
     entidades = crear_asignatura_programa(client, db_session)
