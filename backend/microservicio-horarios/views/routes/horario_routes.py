@@ -22,7 +22,7 @@ async def crear_horario(horario: Horario, db: Session = Depends(get_db), usuario
 
 @horario_router.put("/actualizar-horario/{id}", response_model=Horario)
 async def actualizar_horario(id: int, horario: Horario, db: Session = Depends(get_db), usuario_actual: dict = Depends(obtener_usuario_actual)):
-    return horario_controller.actualizar_horario(id, horario, db)
+    return await horario_controller.actualizar_horario(id, horario, db, usuario_actual)
 
 @horario_router.delete("/eliminar-horario/{id}", status_code=200)
 async def eliminar_horario(id: int, db: Session = Depends(get_db), usuario_actual: dict = Depends(obtener_usuario_actual)):
