@@ -1,4 +1,4 @@
-import httpx
+
 from sqlalchemy.orm import Session
 from models.external.asignatura_programa import AsignaturaPrograma
 from models.programa_model import Programa
