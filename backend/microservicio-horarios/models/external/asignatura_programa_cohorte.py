@@ -18,6 +18,7 @@ class AsignaturaProgramaCohorteBase(BaseModel):
     
     model_config = {
         "from_attributes": True,
+        "orm_mode": True
     }
 
 class AsignaturaProgramaCohorte(Base):
