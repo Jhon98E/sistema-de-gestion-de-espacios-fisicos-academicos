@@ -1,7 +1,6 @@
 from models.cohortes_model import Cohorte, CohorteDB
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-import httpx
 from models.external.programa_model import Programa # noqa: F401
 
 
