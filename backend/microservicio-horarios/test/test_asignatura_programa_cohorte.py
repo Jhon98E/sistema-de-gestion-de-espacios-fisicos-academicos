@@ -176,7 +176,6 @@ def test_eliminar_asignatura_programa_cohorte(client, db_session):
     assert response.json() is None
 
 # TESTS PARA ASIGNATURA PROGRAMA COHORTE DETALLE
-@pytest.mark.skip(reason="Saltando temporalmente por error await en dict")
 def test_crear_asignatura_programa_cohorte_detalle(client, db_session):
     # Crear una AsignaturaProgramaCohorte
     entidades = crear_asignatura_programa(client, db_session)

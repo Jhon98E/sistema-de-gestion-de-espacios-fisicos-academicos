@@ -42,7 +42,7 @@ async def create_asignatura_programa_cohorte_detalle(
     db: Session = Depends(get_db),
     usuario_actual: dict = Depends(obtener_usuario_actual)
 ):
-    return await crear_asignatura_programa_cohorte_detalle(asignatura_programa_cohorte_id, cohorte_id, db)
+    return crear_asignatura_programa_cohorte_detalle(asignatura_programa_cohorte_id, cohorte_id, db)
 
 
 @router.get("/asignaturas_programas_cohortes_detalles/{id}")
