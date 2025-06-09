@@ -1,4 +1,3 @@
-import httpx
 from sqlalchemy.orm import Session
 from models.external.asignatura_programa_cohorte import AsignaturaProgramaCohorteBase, AsignaturaProgramaCohorte
 from models.external.asignatura_programa_cohorte_detalle import AsignaturaProgramaCohorteDetalle
