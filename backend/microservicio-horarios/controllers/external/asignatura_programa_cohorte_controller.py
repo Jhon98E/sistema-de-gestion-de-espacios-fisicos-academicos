@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from models.external.asignatura_programa_cohorte import AsignaturaProgramaCohorteBase, AsignaturaProgramaCohorte
 from models.external.asignatura_programa_cohorte_detalle import AsignaturaProgramaCohorteDetalle
 from models.external.asignatura_programa import AsignaturaPrograma
+from models.external.salones_model import SalonDB
 from models.horario_model import HorarioDB
 from fastapi import HTTPException, status
 from sqlalchemy import and_
@@ -39,16 +40,14 @@ async def verificar_cohorte_existe(cohorte_id: int):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"El cohorte con ID {cohorte_id} no existe en el microservicio de cohortes."
             )
-# ✅ Puedes replicar para salon_id si lo necesitas
-async def verificar_salon_existe(salon_id: int, token: str):
-    headers = {"Authorization": f"Bearer {token}"}
-    async with httpx.AsyncClient() as client:
-        response = await client.get(f"{SALONES_URL}/{salon_id}", headers=headers)
-        if response.status_code != 200:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"El salón con ID {salon_id} no existe en el microservicio de salones."
-            )
+            
+def verificar_salon_existe(salon_id: int, db: Session):
+    salon = db.query(SalonDB).filter(SalonDB.id == salon_id).first()
+    if not salon:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"El salón con ID {salon_id} no existe en la base de datos."
+        )
 
 # ✅ NUEVO: controlador que valida antes de guardar
 async def crear_asignatura_programa_cohorte(asignatura_programa_cohorte_data: AsignaturaProgramaCohorteBase, db: Session):
@@ -134,9 +133,8 @@ def eliminar_asignatura_programa_cohorte_detalle(id: int, db: Session):
 # ✅ NUEVO: Método para actualizar AsignaturaProgramaCohorte
 async def actualizar_asignatura_programa_cohorte(
     id: int,
-    asignatura_programa_cohorte_data: AsignaturaProgramaCohorteBase,
-    db: Session,
-    token: str  # ✅ Nuevo parámetro para pasar el token del usuario actual
+    asignatura_programa_cohorte_data: AsignaturaProgramaCohorteBase, # <- Usar tu schema Pydantic aquí
+    db: Session
 ):
     # 1. Obtener el registro existente
     asignatura_programa_cohorte = db.query(AsignaturaProgramaCohorte).filter(
@@ -149,10 +147,10 @@ async def actualizar_asignatura_programa_cohorte(
             detail=f"Asignatura-Programa-Cohorte con ID {id} no encontrada"
         )
 
-    # 2. Convertir el objeto Pydantic a diccionario
+    # Convertir el objeto Pydantic a diccionario, excluyendo campos no enviados en la solicitud
     update_data_dict = asignatura_programa_cohorte_data.model_dump(exclude_unset=True)
 
-    # 3. Validaciones
+    # 2. Validar existencia de relaciones (si los IDs se actualizan)
     if 'asignatura_programa_id' in update_data_dict:
         asignatura_programa = db.query(AsignaturaPrograma).filter(
             AsignaturaPrograma.id == update_data_dict['asignatura_programa_id']
@@ -160,16 +158,18 @@ async def actualizar_asignatura_programa_cohorte(
         if not asignatura_programa:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Asignatura-Programa no encontrada")
 
-    if 'salon_id' in update_data_dict:
-        await verificar_salon_existe(update_data_dict['salon_id'], token)
 
+    if 'salon_id' in update_data_dict:
+        verificar_salon_existe(update_data_dict['salon_id'], db)
+    
     if 'horario_id' in update_data_dict:
         horario_db = db.query(HorarioDB).filter(HorarioDB.id == update_data_dict['horario_id']).first()
         if not horario_db:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Horario no encontrado")
-
-    # 4. Actualizar campos
+            
+    # 3. Actualizar los campos del objeto existente
     for key, value in update_data_dict.items():
+        # Solo actualizar campos que existen en el modelo y que no son el ID
         if hasattr(asignatura_programa_cohorte, key) and key != 'id':
             setattr(asignatura_programa_cohorte, key, value)
 

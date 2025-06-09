@@ -61,13 +61,9 @@ auth_service = AuthService()
 
 async def obtener_usuario_actual(token: str = Depends(oauth2_scheme)) -> dict:
     """
-    Dependency que obtiene y valida el usuario actual desde el token JWT.
-    También incluye el token original en el diccionario para futuras validaciones.
+    Dependency que obtiene y valida el usuario actual desde el token JWT
     """
-    usuario = await auth_service.validar_token(token)
-    usuario["token"] = token  # 👈 Se incluye el token en el usuario
-    return usuario
-
+    return await auth_service.validar_token(token)
 
 async def verificar_admin(usuario_actual: dict = Depends(obtener_usuario_actual)) -> dict:
     """
